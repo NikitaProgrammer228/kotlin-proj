@@ -4,7 +4,7 @@
             "outputFile": "com.accelerometer.app-mergeDebugResources-37:/values-large-v4/values-large-v4.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\transforms-3\\6ba2f1deafb681c8e9dadb614c849769\\transformed\\appcompat-1.6.1\\res\\values-large-v4\\values-large-v4.xml",
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\transforms-3\\7ceeff8ce7bd34b08da6e6de14092daf\\transformed\\appcompat-1.6.1\\res\\values-large-v4\\values-large-v4.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10",
                         "startColumns": "4,4,4,4,4,4,4,4,4",
@@ -14,7 +14,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\transforms-3\\5d202d69237e8c51e40b6c484f7682ff\\transformed\\material-1.11.0\\res\\values-large-v4\\values-large-v4.xml",
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\transforms-3\\f6e9a2e39435ab0834b437d3a9070386\\transformed\\material-1.11.0\\res\\values-large-v4\\values-large-v4.xml",
                     "from": {
                         "startLines": "2,3,4,5",
                         "startColumns": "4,4,4,4",

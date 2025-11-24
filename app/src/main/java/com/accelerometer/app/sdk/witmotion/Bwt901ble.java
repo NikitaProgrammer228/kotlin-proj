@@ -3,15 +3,20 @@ package com.accelerometer.app.sdk.witmotion;
 import com.accelerometer.app.sdk.witmotion.components.Bwt901bleProcessor;
 import com.accelerometer.app.sdk.witmotion.components.Bwt901bleResolver;
 import com.accelerometer.app.sdk.witmotion.interfaces.IBwt901bleRecordObserver;
-import com.accelerometer.app.sdk.witmotion.interfaces.IListenKeyUpdateObserver;
-import com.accelerometer.app.sdk.witmotion.interfaces.IAttitudeSensorApi;
-import com.accelerometer.app.sdk.witmotion.model.DeviceModel;
+import com.wit.witsdk.api.interfaces.IAttitudeSensorApi;
+import com.wit.witsdk.sensor.modular.connector.enums.ConnectType;
+import com.wit.witsdk.sensor.modular.connector.modular.bluetooth.BluetoothBLE;
+import com.wit.witsdk.sensor.modular.connector.roles.WitCoreConnect;
+import com.wit.witsdk.sensor.modular.device.DeviceModel;
+import com.wit.witsdk.sensor.modular.device.exceptions.OpenDeviceException;
+import com.wit.witsdk.sensor.modular.device.interfaces.IDeviceSendCallback;
+import com.wit.witsdk.sensor.modular.device.interfaces.IListenKeyUpdateObserver;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Обёртка для BLE-датчика WitMotion (адаптирована из примеров производителя).
+ * Обёртка для BLE-датчика WitMotion (адаптация из примеров производителя).
  */
 public class Bwt901ble implements IListenKeyUpdateObserver, IAttitudeSensorApi {
 
@@ -19,25 +24,33 @@ public class Bwt901ble implements IListenKeyUpdateObserver, IAttitudeSensorApi {
     private final BluetoothBLE bluetoothBLE;
     private final List<IBwt901bleRecordObserver> recordObservers = new ArrayList<>();
 
-    public Bwt901ble(MockBluetoothDevice bluetoothDevice) {
+    public Bwt901ble(BluetoothBLE bluetoothBLE) {
         DeviceModel model = new DeviceModel(
-                bluetoothDevice.getName() + "(" + bluetoothDevice.getMac() + ")",
+                bluetoothBLE.getName() + "(" + bluetoothBLE.getMac() + ")",
                 new Bwt901bleResolver(),
                 new Bwt901bleProcessor(),
                 "61_0"
         );
-        model.setDeviceData("Mac", bluetoothDevice.getMac());
+        WitCoreConnect witCoreConnect = new WitCoreConnect();
+        witCoreConnect.setConnectType(ConnectType.BluetoothBLE);
+        witCoreConnect.getConfig().getBluetoothBLEOption().setMac(bluetoothBLE.getMac());
+        model.setCoreConnect(witCoreConnect);
+        model.setDeviceData("Mac", bluetoothBLE.getMac());
 
         this.deviceModel = model;
-        this.bluetoothBLE = bluetoothDevice;
+        this.bluetoothBLE = bluetoothBLE;
     }
 
-    public void open() {
+    public void open() throws OpenDeviceException {
         deviceModel.openDevice();
     }
 
     public void close() {
         deviceModel.closeDevice();
+    }
+
+    public boolean isOpen() {
+        return deviceModel.isOpen();
     }
 
     public void sendData(byte[] data, IDeviceSendCallback callback, int waitTime, int repetition) {
@@ -111,5 +124,3 @@ public class Bwt901ble implements IListenKeyUpdateObserver, IAttitudeSensorApi {
         }
     }
 }
-
-

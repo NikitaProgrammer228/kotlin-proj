@@ -1,5 +1,7 @@
 package com.accelerometer.app.data;
 
+import java.util.Date;
+
 /**
  * Данные с акселерометра по осям X и Y
  */

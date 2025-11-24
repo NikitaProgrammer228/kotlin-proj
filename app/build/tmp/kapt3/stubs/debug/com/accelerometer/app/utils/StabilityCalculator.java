@@ -1,5 +1,7 @@
 package com.accelerometer.app.utils;
 
+import com.accelerometer.app.data.AccelerometerData;
+
 /**
  * Калькулятор стабильности на основе формулы из MicroSwing® 6
  *

@@ -1,5 +1,7 @@
 package com.accelerometer.app.data;
 
+import java.util.Date;
+
 /**
  * Точка в 2D пространстве
  */

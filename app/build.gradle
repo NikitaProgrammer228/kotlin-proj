@@ -37,11 +37,27 @@ android {
     buildFeatures {
         viewBinding true
     }
+    
+    packaging {
+        resources {
+            // Exclude duplicate BuildConfig and other classes that are in both AAR and classes.jar
+            excludes += [
+                '**/BuildConfig.class',
+                'META-INF/DEPENDENCIES',
+                'META-INF/LICENSE',
+                'META-INF/LICENSE.txt',
+                'META-INF/NOTICE',
+                'META-INF/NOTICE.txt'
+            ]
+        }
+    }
 }
 
-repositories {
-    flatDir {
-        dirs 'libs'
+kapt {
+    correctErrorTypes = true
+    // Add WitMotion SDK classes to KAPT annotation processor classpath
+    arguments {
+        arg("kapt.incremental.apt", "true")
     }
 }
 
@@ -61,11 +77,31 @@ dependencies {
     implementation 'androidx.room:room-ktx:2.6.1'
     kapt 'androidx.room:room-compiler:2.6.1'
 
-    // WitMotion BLE SDK (local AAR)
+    // WitMotion BLE SDK (local AAR via flatDir)
     implementation(name: 'wit-sdk', ext: 'aar')
+    // Add classes.jar to compile classpath (for Java compilation)
+    // Using compileOnly to avoid duplicate classes at runtime (AAR already contains them)
+    compileOnly files('libs/wit-sdk-extracted/classes.jar')
     
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+// Ensure KAPT can see the WitMotion SDK classes
+// KAPT needs access to the classes during annotation processing
+// Using compileOnly avoids duplicate classes at runtime (AAR already contains them)
+afterEvaluate {
+    def classesJar = file('libs/wit-sdk-extracted/classes.jar')
+    if (classesJar.exists()) {
+        // Add classes.jar to KAPT annotation processor classpath
+        // This makes SDK classes available to annotation processors like Room
+        configurations.kapt.dependencies.add(
+            project.dependencies.create(files(classesJar))
+        )
+        
+        // Also ensure compileOnly dependencies are available to KAPT
+        configurations.kapt.extendsFrom(configurations.compileOnly)
+    }
 }
 

@@ -4,7 +4,7 @@
             "outputFile": "com.accelerometer.app-mergeDebugResources-37:/values-hdpi-v4/values-hdpi-v4.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\transforms-3\\6ba2f1deafb681c8e9dadb614c849769\\transformed\\appcompat-1.6.1\\res\\values-hdpi-v4\\values-hdpi-v4.xml",
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\transforms-3\\7ceeff8ce7bd34b08da6e6de14092daf\\transformed\\appcompat-1.6.1\\res\\values-hdpi-v4\\values-hdpi-v4.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

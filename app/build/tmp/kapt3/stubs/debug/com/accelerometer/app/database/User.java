@@ -1,5 +1,8 @@
 package com.accelerometer.app.database;
 
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 /**
  * Модель пользователя для локального хранения
  */

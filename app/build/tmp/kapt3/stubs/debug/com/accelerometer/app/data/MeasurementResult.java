@@ -1,5 +1,7 @@
 package com.accelerometer.app.data;
 
+import java.util.Date;
+
 /**
  * Результаты измерений
  */

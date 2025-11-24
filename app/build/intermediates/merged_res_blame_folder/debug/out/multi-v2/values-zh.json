@@ -4,7 +4,7 @@
             "outputFile": "com.accelerometer.app-mergeDebugResources-37:/values-zh/values-zh.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\transforms-3\\9fc93b23e89efa044d68e7077728b903\\transformed\\wit-sdk\\res\\values-zh\\values-zh.xml",
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\transforms-3\\1996cb39ef86cbbb5a43d72c11189d77\\transformed\\wit-sdk\\res\\values-zh\\values-zh.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
