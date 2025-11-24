@@ -47,7 +47,7 @@
         android:testOnly="true"
         android:theme="@style/Theme.AccelerometerApp" >
         <activity
-            android:name="com.accelerometer.app.MainActivity"
+            android:name="com.accelerometer.app.ui.MainActivity"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -56,7 +56,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.accelerometer.app.UserManagementActivity"
+            android:name="com.accelerometer.app.ui.UserManagementActivity"
             android:exported="false" />
 
         <provider

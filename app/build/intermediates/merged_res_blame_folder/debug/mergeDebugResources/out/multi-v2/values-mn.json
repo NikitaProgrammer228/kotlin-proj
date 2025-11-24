@@ -1,25 +1,8 @@
 {
     "logs": [
         {
-            "outputFile": "com.accelerometer.app-mergeDebugResources-37:/values-mn/values-mn.xml",
+            "outputFile": "com.accelerometer.app-mergeDebugResources-39:/values-mn/values-mn.xml",
             "map": [
-                {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\4fe1e5d59d383fafa035e1580c8dacb0\\transformed\\core-1.12.0\\res\\values-mn\\values-mn.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,153,255,356,454,559,671,790",
-                        "endColumns": "97,101,100,97,104,111,118,100",
-                        "endOffsets": "148,250,351,449,554,666,785,886"
-                    },
-                    "to": {
-                        "startLines": "38,39,40,41,42,43,44,109",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "3414,3512,3614,3715,3813,3918,4030,9305",
-                        "endColumns": "97,101,100,97,104,111,118,100",
-                        "endOffsets": "3507,3609,3710,3808,3913,4025,4144,9401"
-                    }
-                },
                 {
                     "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\ec4b7e3fd7557f887cf735cbb37411f2\\transformed\\appcompat-1.6.1\\res\\values-mn\\values-mn.xml",
                     "from": {
@@ -35,6 +18,23 @@
                         "startOffsets": "315,429,529,638,724,830,944,1027,1108,1199,1292,1387,1483,1580,1673,1767,1859,1950,2040,2120,2227,2330,2427,2534,2636,2749,2908,9224",
                         "endColumns": "113,99,108,85,105,113,82,80,90,92,94,95,96,92,93,91,90,89,79,106,102,96,106,101,112,158,98,80",
                         "endOffsets": "424,524,633,719,825,939,1022,1103,1194,1287,1382,1478,1575,1668,1762,1854,1945,2035,2115,2222,2325,2422,2529,2631,2744,2903,3002,9300"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\6291c780cc2700d0e649ee35acd3035f\\transformed\\core-1.13.0\\res\\values-mn\\values-mn.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,153,255,356,454,559,671,790",
+                        "endColumns": "97,101,100,97,104,111,118,100",
+                        "endOffsets": "148,250,351,449,554,666,785,886"
+                    },
+                    "to": {
+                        "startLines": "38,39,40,41,42,43,44,109",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "3414,3512,3614,3715,3813,3918,4030,9305",
+                        "endColumns": "97,101,100,97,104,111,118,100",
+                        "endOffsets": "3507,3609,3710,3808,3913,4025,4144,9401"
                     }
                 },
                 {

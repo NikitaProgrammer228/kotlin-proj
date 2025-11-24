@@ -135,18 +135,23 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun checkPermissionsAndConnect() {
-        val permissions = mutableListOf<String>().apply {
-            add(Manifest.permission.BLUETOOTH_SCAN)
-            add(Manifest.permission.BLUETOOTH_CONNECT)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                add(Manifest.permission.ACCESS_FINE_LOCATION)
-            }
+        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            listOf(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.ACCESS_FINE_LOCATION // required unless we opt-out via neverForLocation flag
+            )
+        } else {
+            listOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
         }
-        
+
         val permissionsToRequest = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
-        
+
         if (permissionsToRequest.isEmpty()) {
             showDeviceSelectionDialog()
         } else {

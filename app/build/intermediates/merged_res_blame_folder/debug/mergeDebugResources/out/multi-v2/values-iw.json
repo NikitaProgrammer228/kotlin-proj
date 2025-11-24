@@ -1,25 +1,8 @@
 {
     "logs": [
         {
-            "outputFile": "com.accelerometer.app-mergeDebugResources-37:/values-iw/values-iw.xml",
+            "outputFile": "com.accelerometer.app-mergeDebugResources-39:/values-iw/values-iw.xml",
             "map": [
-                {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\4fe1e5d59d383fafa035e1580c8dacb0\\transformed\\core-1.12.0\\res\\values-iw\\values-iw.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,149,251,348,445,546,646,752",
-                        "endColumns": "93,101,96,96,100,99,105,100",
-                        "endOffsets": "144,246,343,440,541,641,747,848"
-                    },
-                    "to": {
-                        "startLines": "39,40,41,42,43,44,45,110",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "3437,3531,3633,3730,3827,3928,4028,9061",
-                        "endColumns": "93,101,96,96,100,99,105,100",
-                        "endOffsets": "3526,3628,3725,3822,3923,4023,4129,9157"
-                    }
-                },
                 {
                     "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\069b00c69cfda3d47ac5fc84cdf8431b\\transformed\\material-1.11.0\\res\\values-iw\\values-iw.xml",
                     "from": {
@@ -54,6 +37,23 @@
                         "startOffsets": "361,466,566,674,758,860,976,1055,1133,1224,1318,1412,1506,1606,1699,1794,1887,1978,2070,2151,2256,2359,2457,2562,2664,2766,2920,8979",
                         "endColumns": "104,99,107,83,101,115,78,77,90,93,93,93,99,92,94,92,90,91,80,104,102,97,104,101,101,153,96,81",
                         "endOffsets": "461,561,669,753,855,971,1050,1128,1219,1313,1407,1501,1601,1694,1789,1882,1973,2065,2146,2251,2354,2452,2557,2659,2761,2915,3012,9056"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\6291c780cc2700d0e649ee35acd3035f\\transformed\\core-1.13.0\\res\\values-iw\\values-iw.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,149,251,348,445,546,646,752",
+                        "endColumns": "93,101,96,96,100,99,105,100",
+                        "endOffsets": "144,246,343,440,541,641,747,848"
+                    },
+                    "to": {
+                        "startLines": "39,40,41,42,43,44,45,110",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "3437,3531,3633,3730,3827,3928,4028,9061",
+                        "endColumns": "93,101,96,96,100,99,105,100",
+                        "endOffsets": "3526,3628,3725,3822,3923,4023,4129,9157"
                     }
                 }
             ]

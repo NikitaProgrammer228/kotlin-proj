@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.accelerometer.app-mergeDebugResources-37:/values-zh/values-zh.xml",
+            "outputFile": "com.accelerometer.app-mergeDebugResources-39:/values-zh/values-zh.xml",
             "map": [
                 {
                     "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\f309d31216feb65a92a4bfbf456727e5\\transformed\\wit-sdk\\res\\values-zh\\values-zh.xml",

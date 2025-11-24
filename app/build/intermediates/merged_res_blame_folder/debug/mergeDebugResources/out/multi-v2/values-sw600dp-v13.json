@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.accelerometer.app-mergeDebugResources-37:/values-sw600dp-v13/values-sw600dp-v13.xml",
+            "outputFile": "com.accelerometer.app-mergeDebugResources-39:/values-sw600dp-v13/values-sw600dp-v13.xml",
             "map": [
                 {
                     "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\ec4b7e3fd7557f887cf735cbb37411f2\\transformed\\appcompat-1.6.1\\res\\values-sw600dp-v13\\values-sw600dp-v13.xml",

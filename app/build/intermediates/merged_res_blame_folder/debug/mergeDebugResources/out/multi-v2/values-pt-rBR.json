@@ -1,8 +1,25 @@
 {
     "logs": [
         {
-            "outputFile": "com.accelerometer.app-mergeDebugResources-37:/values-pt-rBR/values-pt-rBR.xml",
+            "outputFile": "com.accelerometer.app-mergeDebugResources-39:/values-pt-rBR/values-pt-rBR.xml",
             "map": [
+                {
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\6291c780cc2700d0e649ee35acd3035f\\transformed\\core-1.13.0\\res\\values-pt-rBR\\values-pt-rBR.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,152,254,353,453,560,670,790",
+                        "endColumns": "96,101,98,99,106,109,119,100",
+                        "endOffsets": "147,249,348,448,555,665,785,886"
+                    },
+                    "to": {
+                        "startLines": "38,39,40,41,42,43,44,109",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "3488,3585,3687,3786,3886,3993,4103,9452",
+                        "endColumns": "96,101,98,99,106,109,119,100",
+                        "endOffsets": "3580,3682,3781,3881,3988,4098,4218,9548"
+                    }
+                },
                 {
                     "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\069b00c69cfda3d47ac5fc84cdf8431b\\transformed\\material-1.11.0\\res\\values-pt-rBR\\values-pt-rBR.xml",
                     "from": {
@@ -37,23 +54,6 @@
                         "startOffsets": "323,443,549,656,745,846,965,1050,1130,1221,1314,1409,1503,1603,1696,1791,1886,1977,2068,2153,2260,2371,2473,2581,2689,2799,2961,9366",
                         "endColumns": "119,105,106,88,100,118,84,79,90,92,94,93,99,92,94,94,90,90,84,106,110,101,107,107,109,161,99,85",
                         "endOffsets": "438,544,651,740,841,960,1045,1125,1216,1309,1404,1498,1598,1691,1786,1881,1972,2063,2148,2255,2366,2468,2576,2684,2794,2956,3056,9447"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\4fe1e5d59d383fafa035e1580c8dacb0\\transformed\\core-1.12.0\\res\\values-pt-rBR\\values-pt-rBR.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,152,254,353,453,560,670,790",
-                        "endColumns": "96,101,98,99,106,109,119,100",
-                        "endOffsets": "147,249,348,448,555,665,785,886"
-                    },
-                    "to": {
-                        "startLines": "38,39,40,41,42,43,44,109",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "3488,3585,3687,3786,3886,3993,4103,9452",
-                        "endColumns": "96,101,98,99,106,109,119,100",
-                        "endOffsets": "3580,3682,3781,3881,3988,4098,4218,9548"
                     }
                 }
             ]

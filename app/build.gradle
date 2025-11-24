@@ -41,7 +41,8 @@ android {
 
 kapt {
     correctErrorTypes = true
-    // Add WitMotion SDK classes to KAPT annotation processor classpath
+    // Allow KAPT to see compile classpath (WitMotion SDK interfaces live there)
+    includeCompileClasspath = true
     arguments {
         arg("kapt.incremental.apt", "true")
     }
@@ -54,6 +55,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+    implementation 'androidx.activity:activity-ktx:1.9.0'
     
     // Chart library
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
@@ -73,4 +75,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
+
 

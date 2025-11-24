@@ -22,7 +22,7 @@
     <string name="users">Пользователи</string>
     <string name="x_axis">Ось X</string>
     <string name="y_axis">Ось Y</string>
-    <style name="Theme.AccelerometerApp" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.AccelerometerApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/white</item>
