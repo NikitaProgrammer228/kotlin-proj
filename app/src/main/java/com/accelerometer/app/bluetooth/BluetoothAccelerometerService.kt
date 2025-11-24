@@ -11,8 +11,8 @@ import com.wit.witsdk.modular.sensor.modular.connector.modular.bluetooth.excepti
 import com.wit.witsdk.modular.sensor.modular.connector.modular.bluetooth.interfaces.IBluetoothFoundObserver
 import com.wit.witsdk.modular.sensor.device.exceptions.OpenDeviceException
 import com.wit.witsdk.modular.sensor.modular.processor.constant.WitSensorKey
-import com.wit.witsdk.modular.witsensorapi.modular.ble5.Bwt901ble
-import com.wit.witsdk.modular.witsensorapi.modular.ble5.interfaces.IBwt901bleRecordObserver
+import com.wit.witsdk.modular.sensor.example.ble5.Bwt901ble
+import com.wit.witsdk.modular.sensor.example.ble5.interfaces.IBwt901bleRecordObserver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -140,8 +140,12 @@ class BluetoothAccelerometerService(
     }
 
     override fun onRecord(bwt901ble: Bwt901ble) {
-        val x = parseAcceleration(bwt901ble.getDeviceData(WitSensorKey.AccX)) ?: return
-        val y = parseAcceleration(bwt901ble.getDeviceData(WitSensorKey.AccY)) ?: return
+        val rawX = bwt901ble.getDeviceData(WitSensorKey.AccX)
+        val rawY = bwt901ble.getDeviceData(WitSensorKey.AccY)
+        Log.d(TAG, "onRecord from ${bwt901ble.deviceName} rawX=$rawX rawY=$rawY")
+
+        val x = parseAcceleration(rawX) ?: return
+        val y = parseAcceleration(rawY) ?: return
         val accelerometerData = AccelerometerData(x, y)
         _accelerometerData.value = accelerometerData
 
@@ -154,7 +158,17 @@ class BluetoothAccelerometerService(
     }
 
     private fun parseAcceleration(raw: String?): Float? {
-        val value = raw?.toFloatOrNull() ?: return null
+        if (raw.isNullOrBlank()) {
+            Log.w(TAG, "parseAcceleration: empty value")
+            return null
+        }
+        // SDK возвращает значения с запятой в качестве разделителя.
+        val normalized = raw.replace(',', '.')
+        val value = normalized.toFloatOrNull()
+        if (value == null) {
+            Log.w(TAG, "parseAcceleration: cannot parse $raw")
+            return null
+        }
         return value * GRAVITY
     }
 
@@ -169,7 +183,7 @@ class BluetoothAccelerometerService(
 
     private fun matchesDeviceName(deviceName: String?): Boolean {
         if (DEVICE_NAME_FILTER.isEmpty()) return true
-        val normalized = deviceName?.uppercase() ?: return false
+        val normalized = deviceName?.uppercase() ?: return true
         return DEVICE_NAME_FILTER.any { normalized.contains(it.uppercase()) }
     }
 
