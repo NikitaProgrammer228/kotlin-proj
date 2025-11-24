@@ -1,0 +1,28 @@
+/* 
+  Localizable.strings
+  WTBLE901
+
+  Created by wit-motion on 2019/2/23.
+  Copyright © 2019 wit-motion. All rights reserved.
+*/
+
+"acceleration" = "a";
+"angular_velocity" = "w";
+"angle" = "Angle";
+"magnetic" = "h";
+"barometric_pressure" = "P";
+"port" = "Port";
+"quaternion" = "q";
+"stop_scan" = "Stop";
+"scan" = "Scan";
+"disconnect" = "Disconnect";
+"connect" = "Connect";
+"cancel" = "Cancel";
+"done" = "OK";
+"select_port_mode" = "Please Select Port Mode";
+"select_output_rate" = "Please Select Output Rate";
+"input_ble_device_name" = "Please input new device name";
+"prefix_of_ble_device" = "The name should has prefix of 'WT'";
+"length_of_ble_device" = "Length should less than 10 bytes";
+"change_name_success" = "Successfully modified!";
+

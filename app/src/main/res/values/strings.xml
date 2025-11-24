@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Accelerometer App</string>
+    <string name="connect">Подключиться</string>
+    <string name="disconnect">Отключиться</string>
+    <string name="scanning">Поиск устройств...</string>
+    <string name="connected">Подключено</string>
+    <string name="disconnected">Отключено</string>
+    <string name="stability">Стабильность</string>
+    <string name="oscillation_frequency">Частота колебаний</string>
+    <string name="x_axis">Ось X</string>
+    <string name="y_axis">Ось Y</string>
+    <string name="users">Пользователи</string>
+    <string name="add_user">Добавить пользователя</string>
+    <string name="measurement_time">Время измерения: %1$d сек</string>
+</resources>
+

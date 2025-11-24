@@ -1,0 +1,6 @@
+framework module WTBLESDK {
+  umbrella header "WTBLESDK.h"
+
+  export *
+  module * { export * }
+}

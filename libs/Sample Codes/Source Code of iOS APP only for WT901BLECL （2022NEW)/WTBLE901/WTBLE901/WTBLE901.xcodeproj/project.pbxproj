@@ -1,0 +1,463 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2447AC272220ECF600E8F37D /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2447AC292220ECF600E8F37D /* Localizable.strings */; };
+		24FBAB6222009A98001ADA25 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 24FBAB6122009A98001ADA25 /* AppDelegate.m */; };
+		24FBAB6522009A98001ADA25 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 24FBAB6422009A98001ADA25 /* ViewController.m */; };
+		24FBAB6822009A98001ADA25 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 24FBAB6622009A98001ADA25 /* Main.storyboard */; };
+		24FBAB6A22009A99001ADA25 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 24FBAB6922009A99001ADA25 /* Assets.xcassets */; };
+		24FBAB6D22009A99001ADA25 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 24FBAB6B22009A99001ADA25 /* LaunchScreen.storyboard */; };
+		24FBAB7022009A99001ADA25 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 24FBAB6F22009A99001ADA25 /* main.m */; };
+		24FBAB7C22009B95001ADA25 /* WTBLESDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 24FBAB7B22009B65001ADA25 /* WTBLESDK.framework */; };
+		24FBAB7D22009B95001ADA25 /* WTBLESDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 24FBAB7B22009B65001ADA25 /* WTBLESDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		24FBAB832200A441001ADA25 /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 24FBAB822200A441001ADA25 /* DetailViewController.m */; };
+		24FBAB862200A96B001ADA25 /* WTBLEPeripheral.m in Sources */ = {isa = PBXBuildFile; fileRef = 24FBAB852200A96B001ADA25 /* WTBLEPeripheral.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		24FBAB7A22009B65001ADA25 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 24FBAB7622009B65001ADA25 /* WTBLESDK.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 24E5EB4021F8186D0008DEC1;
+			remoteInfo = WTBLESDK;
+		};
+		24FBAB7E22009B95001ADA25 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 24FBAB7622009B65001ADA25 /* WTBLESDK.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 24E5EB3F21F8186D0008DEC1;
+			remoteInfo = WTBLESDK;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		24FBAB8022009B96001ADA25 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				24FBAB7D22009B95001ADA25 /* WTBLESDK.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		242C7D412220EBF7001B68E2 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
+		242C7D422220EBF7001B68E2 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
+		2447AC282220ECF600E8F37D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		2447AC2A2220ECFA00E8F37D /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		2447AC2B2220ED0F00E8F37D /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Main.strings"; sourceTree = "<group>"; };
+		2447AC2C2220ED0F00E8F37D /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
+		2447AC2D2220ED0F00E8F37D /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		2447AC2E2220ED1800E8F37D /* zh-HK */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-HK"; path = "zh-HK.lproj/Main.strings"; sourceTree = "<group>"; };
+		2447AC2F2220ED1800E8F37D /* zh-HK */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-HK"; path = "zh-HK.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
+		2447AC302220ED1800E8F37D /* zh-HK */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-HK"; path = "zh-HK.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		24FBAB5D22009A98001ADA25 /* WTBLE901.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WTBLE901.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		24FBAB6022009A98001ADA25 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		24FBAB6122009A98001ADA25 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		24FBAB6322009A98001ADA25 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		24FBAB6422009A98001ADA25 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		24FBAB6722009A98001ADA25 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		24FBAB6922009A99001ADA25 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		24FBAB6C22009A99001ADA25 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		24FBAB6E22009A99001ADA25 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		24FBAB6F22009A99001ADA25 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		24FBAB7622009B65001ADA25 /* WTBLESDK.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WTBLESDK.xcodeproj; path = WTBLESDK/WTBLESDK.xcodeproj; sourceTree = "<group>"; };
+		24FBAB812200A441001ADA25 /* DetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
+		24FBAB822200A441001ADA25 /* DetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
+		24FBAB842200A96B001ADA25 /* WTBLEPeripheral.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WTBLEPeripheral.h; sourceTree = "<group>"; };
+		24FBAB852200A96B001ADA25 /* WTBLEPeripheral.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WTBLEPeripheral.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		24FBAB5A22009A98001ADA25 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				24FBAB7C22009B95001ADA25 /* WTBLESDK.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		24FBAB5422009A98001ADA25 = {
+			isa = PBXGroup;
+			children = (
+				24FBAB5F22009A98001ADA25 /* WTBLE901 */,
+				24FBAB7622009B65001ADA25 /* WTBLESDK.xcodeproj */,
+				24FBAB5E22009A98001ADA25 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		24FBAB5E22009A98001ADA25 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				24FBAB5D22009A98001ADA25 /* WTBLE901.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		24FBAB5F22009A98001ADA25 /* WTBLE901 */ = {
+			isa = PBXGroup;
+			children = (
+				24FBAB6022009A98001ADA25 /* AppDelegate.h */,
+				24FBAB6122009A98001ADA25 /* AppDelegate.m */,
+				24FBAB842200A96B001ADA25 /* WTBLEPeripheral.h */,
+				24FBAB852200A96B001ADA25 /* WTBLEPeripheral.m */,
+				24FBAB6322009A98001ADA25 /* ViewController.h */,
+				24FBAB6422009A98001ADA25 /* ViewController.m */,
+				24FBAB812200A441001ADA25 /* DetailViewController.h */,
+				24FBAB822200A441001ADA25 /* DetailViewController.m */,
+				24FBAB6622009A98001ADA25 /* Main.storyboard */,
+				24FBAB6922009A99001ADA25 /* Assets.xcassets */,
+				24FBAB6B22009A99001ADA25 /* LaunchScreen.storyboard */,
+				24FBAB6E22009A99001ADA25 /* Info.plist */,
+				24FBAB6F22009A99001ADA25 /* main.m */,
+				2447AC292220ECF600E8F37D /* Localizable.strings */,
+			);
+			path = WTBLE901;
+			sourceTree = "<group>";
+		};
+		24FBAB7722009B65001ADA25 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				24FBAB7B22009B65001ADA25 /* WTBLESDK.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		24FBAB5C22009A98001ADA25 /* WTBLE901 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 24FBAB7322009A99001ADA25 /* Build configuration list for PBXNativeTarget "WTBLE901" */;
+			buildPhases = (
+				24FBAB5922009A98001ADA25 /* Sources */,
+				24FBAB5A22009A98001ADA25 /* Frameworks */,
+				24FBAB5B22009A98001ADA25 /* Resources */,
+				24FBAB8022009B96001ADA25 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				24FBAB7F22009B95001ADA25 /* PBXTargetDependency */,
+			);
+			name = WTBLE901;
+			productName = WTBLE901;
+			productReference = 24FBAB5D22009A98001ADA25 /* WTBLE901.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		24FBAB5522009A98001ADA25 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1010;
+				ORGANIZATIONNAME = "wit-motion";
+				TargetAttributes = {
+					24FBAB5C22009A98001ADA25 = {
+						CreatedOnToolsVersion = 10.1;
+					};
+				};
+			};
+			buildConfigurationList = 24FBAB5822009A98001ADA25 /* Build configuration list for PBXProject "WTBLE901" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hans",
+				"zh-Hant",
+				"zh-HK",
+			);
+			mainGroup = 24FBAB5422009A98001ADA25;
+			productRefGroup = 24FBAB5E22009A98001ADA25 /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 24FBAB7722009B65001ADA25 /* Products */;
+					ProjectRef = 24FBAB7622009B65001ADA25 /* WTBLESDK.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				24FBAB5C22009A98001ADA25 /* WTBLE901 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		24FBAB7B22009B65001ADA25 /* WTBLESDK.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = WTBLESDK.framework;
+			remoteRef = 24FBAB7A22009B65001ADA25 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		24FBAB5B22009A98001ADA25 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				24FBAB6D22009A99001ADA25 /* LaunchScreen.storyboard in Resources */,
+				2447AC272220ECF600E8F37D /* Localizable.strings in Resources */,
+				24FBAB6A22009A99001ADA25 /* Assets.xcassets in Resources */,
+				24FBAB6822009A98001ADA25 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		24FBAB5922009A98001ADA25 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				24FBAB6522009A98001ADA25 /* ViewController.m in Sources */,
+				24FBAB862200A96B001ADA25 /* WTBLEPeripheral.m in Sources */,
+				24FBAB7022009A99001ADA25 /* main.m in Sources */,
+				24FBAB6222009A98001ADA25 /* AppDelegate.m in Sources */,
+				24FBAB832200A441001ADA25 /* DetailViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		24FBAB7F22009B95001ADA25 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = WTBLESDK;
+			targetProxy = 24FBAB7E22009B95001ADA25 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		2447AC292220ECF600E8F37D /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2447AC282220ECF600E8F37D /* en */,
+				2447AC2A2220ECFA00E8F37D /* zh-Hans */,
+				2447AC2D2220ED0F00E8F37D /* zh-Hant */,
+				2447AC302220ED1800E8F37D /* zh-HK */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		24FBAB6622009A98001ADA25 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				24FBAB6722009A98001ADA25 /* Base */,
+				242C7D412220EBF7001B68E2 /* zh-Hans */,
+				2447AC2B2220ED0F00E8F37D /* zh-Hant */,
+				2447AC2E2220ED1800E8F37D /* zh-HK */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		24FBAB6B22009A99001ADA25 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				24FBAB6C22009A99001ADA25 /* Base */,
+				242C7D422220EBF7001B68E2 /* zh-Hans */,
+				2447AC2C2220ED0F00E8F37D /* zh-Hant */,
+				2447AC2F2220ED1800E8F37D /* zh-HK */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		24FBAB7122009A99001ADA25 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		24FBAB7222009A99001ADA25 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		24FBAB7422009A99001ADA25 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = WTBLE901/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "wit-motion.WTBLE901";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		24FBAB7522009A99001ADA25 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = WTBLE901/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "wit-motion.WTBLE901";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		24FBAB5822009A98001ADA25 /* Build configuration list for PBXProject "WTBLE901" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				24FBAB7122009A99001ADA25 /* Debug */,
+				24FBAB7222009A99001ADA25 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		24FBAB7322009A99001ADA25 /* Build configuration list for PBXNativeTarget "WTBLE901" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				24FBAB7422009A99001ADA25 /* Debug */,
+				24FBAB7522009A99001ADA25 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 24FBAB5522009A98001ADA25 /* Project object */;
+}

@@ -1,0 +1,63 @@
+
+/* Class = "UIButton"; normalTitle = "加计较准L"; ObjectID = "2qi-mP-GoJ"; */
+"2qi-mP-GoJ.normalTitle" = "加计较准L";
+
+/* Class = "UIButton"; normalTitle = "保存"; ObjectID = "3G9-Op-c4n"; */
+"3G9-Op-c4n.normalTitle" = "保存";
+
+/* Class = "UILabel"; text = "value"; ObjectID = "3Kw-DX-gc5"; */
+"3Kw-DX-gc5.text" = "value";
+
+/* Class = "UILabel"; text = "value"; ObjectID = "7Sp-el-q9O"; */
+"7Sp-el-q9O.text" = "value";
+
+/* Class = "UIButton"; normalTitle = "恢复"; ObjectID = "8Gx-sZ-MNh"; */
+"8Gx-sZ-MNh.normalTitle" = "恢复";
+
+/* Class = "UIButton"; normalTitle = "加计较准"; ObjectID = "EtE-ZP-qCE"; */
+"EtE-ZP-qCE.normalTitle" = "加计较准";
+
+/* Class = "UIButton"; normalTitle = "D2"; ObjectID = "LKL-gY-olh"; */
+"LKL-gY-olh.normalTitle" = "D2";
+
+/* Class = "UIButton"; normalTitle = "D1"; ObjectID = "PfR-LV-1eS"; */
+"PfR-LV-1eS.normalTitle" = "D1";
+
+/* Class = "UIButton"; normalTitle = "磁场校准"; ObjectID = "T7Q-mq-m8h"; */
+"T7Q-mq-m8h.normalTitle" = "磁场校准";
+
+/* Class = "UIButton"; selectedTitle = "完成"; ObjectID = "T7Q-mq-m8h"; */
+"T7Q-mq-m8h.selectedTitle" = "完成";
+
+/* Class = "UIButton"; normalTitle = "加计较准R"; ObjectID = "bNJ-rT-VrH"; */
+"bNJ-rT-VrH.normalTitle" = "加计较准R";
+
+/* Class = "UILabel"; text = "value"; ObjectID = "c9Z-JU-wf0"; */
+"c9Z-JU-wf0.text" = "value";
+
+/* Class = "UILabel"; text = "key"; ObjectID = "jjn-aE-RuM"; */
+"jjn-aE-RuM.text" = "key";
+
+/* Class = "UIButton"; normalTitle = "D0"; ObjectID = "kCd-jb-SuO"; */
+"kCd-jb-SuO.normalTitle" = "D0";
+
+/* Class = "UILabel"; text = "key"; ObjectID = "kT3-5L-6vU"; */
+"kT3-5L-6vU.text" = "key";
+
+/* Class = "UILabel"; text = "key"; ObjectID = "pIO-gB-DmT"; */
+"pIO-gB-DmT.text" = "key";
+
+/* Class = "UIButton"; normalTitle = "D3"; ObjectID = "td6-Uf-awN"; */
+"td6-Uf-awN.normalTitle" = "D3";
+
+/* Class = "UILabel"; text = "key"; ObjectID = "uHE-Mq-wvl"; */
+"uHE-Mq-wvl.text" = "key";
+
+/* Class = "UILabel"; text = "value"; ObjectID = "ulJ-CA-dcq"; */
+"ulJ-CA-dcq.text" = "value";
+
+/* Class = "UIButton"; normalTitle = "速率"; ObjectID = "xuK-e2-6mv"; */
+"xuK-e2-6mv.normalTitle" = "速率";
+
+/* Class = "UIButton"; normalTitle = "改名"; ObjectID = "aEc-kQ-TZH"; */
+"aEc-kQ-TZH.normalTitle" = "改名";

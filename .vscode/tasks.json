@@ -1,0 +1,70 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build APK (Debug)",
+            "type": "shell",
+            "command": "./gradlew",
+            "args": [
+                "assembleDebug"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install APK",
+            "type": "shell",
+            "command": "./gradlew",
+            "args": [
+                "installDebug"
+            ],
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run App",
+            "type": "shell",
+            "command": "./gradlew",
+            "args": [
+                "installDebug",
+                "&&",
+                "adb",
+                "shell",
+                "am",
+                "start",
+                "-n",
+                "com.accelerometer.app/.MainActivity"
+            ],
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "View Logcat",
+            "type": "shell",
+            "command": "adb",
+            "args": [
+                "logcat",
+                "-s",
+                "BluetoothAccelerometer:*",
+                "AndroidRuntime:E"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "Clear Logcat",
+            "type": "shell",
+            "command": "adb",
+            "args": [
+                "logcat",
+                "-c"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        }
+    ]
+}
+

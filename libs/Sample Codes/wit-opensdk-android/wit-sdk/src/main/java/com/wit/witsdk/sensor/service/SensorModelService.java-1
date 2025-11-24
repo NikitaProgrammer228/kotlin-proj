@@ -1,0 +1,91 @@
+package com.wit.witsdk.sensor.service;
+
+import android.annotation.SuppressLint;
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+import android.util.Log;
+
+import androidx.annotation.Nullable;
+
+import com.wit.witsdk.sensor.context.ProductModelManager;
+import com.wit.witsdk.sensor.interfaces.BaseProduct;
+import com.wit.witsdk.sensor.interfaces.IProduct;
+import com.wit.witsdk.sensor.utils.ClassesReader;
+
+import java.util.List;
+
+/**
+ * 传感器型号服务类
+ *
+ * @author huangyajun
+ * @date 2023/2/1 17:12
+ */
+public class SensorModelService extends Service {
+
+    // 广播接收
+    public static final String BROADCAST_SERVER = "SensorModelService.BROADCAST_SERVER";
+
+    public static final String BROADCAST_CLIENT = "SensorModelService.BROADCAST_CLIENT";
+
+    public static final String TAG = "SMSService";
+
+    /**
+     * 启动时
+     *
+     * @author huangyajun
+     * @date 2022/5/9 20:38
+     */
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.d("", "传感器型号服务启动了");
+//        // 找到所有的子类
+//        List<Class<? extends ISensor>> classes = loadSensorList();
+//        try {
+//            SensorModelManager.loadSensorClassList(classes, this);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+    }
+
+    /**
+     * 销毁时
+     *
+     * @author huangyajun
+     * @date 2022/5/9 20:49
+     */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    /**
+     * 再次启动时
+     *
+     * @author huangyajun
+     * @date 2022/5/9 20:38
+     */
+    @SuppressLint("WrongConstant")
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // 避免service被注销
+        flags = START_STICKY;
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    /**
+     * 绑定时
+     *
+     * @author huangyajun
+     * @date 2023/2/1 18:03
+     */
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+
+
+}

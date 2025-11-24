@@ -1,0 +1,4 @@
+wit-example-ble5：蓝牙5.0示例程序
+wit-example-ble5-en：蓝牙5.0示例程序(英文)
+wit-example-classic：蓝牙2.0示例程序
+wit-example-classic-en：蓝牙2.0示例程序(英文)

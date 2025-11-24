@@ -1,0 +1,27 @@
+/* 
+  Localizable.strings
+  WTBLE901
+
+  Created by wit-motion on 2019/2/23.
+  Copyright © 2019 wit-motion. All rights reserved.
+*/
+
+"acceleration" = "加速度";
+"angular_velocity" = "角速度";
+"angle" = "角度";
+"magnetic" = "磁场";
+"barometric_pressure" = "气压";
+"port" = "端口";
+"quaternion" = "四元数";
+"stop_scan" = "停止";
+"scan" = "扫描";
+"disconnect" = "断开";
+"connect" = "连接";
+"cancel" = "取消";
+"done" = "确定";
+"select_port_mode" = "请选择端口模式";
+"select_output_rate" = "请选择输出速率";
+"input_ble_device_name" = "请输入要修改的设备名";
+"prefix_of_ble_device" = "名称必须以WT开头";
+"length_of_ble_device" = "长度须小于10字节";
+"change_name_success" = "修改成功！";
