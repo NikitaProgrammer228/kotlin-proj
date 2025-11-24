@@ -7,6 +7,8 @@
     <string name="disconnected">Отключено</string>
     <string name="stability">Стабильность</string>
     <string name="oscillation_frequency">Частота колебаний</string>
+    <string name="stability_initial">Стабильность: 0%%</string>
+    <string name="oscillation_frequency_initial">Частота колебаний: 0 Hz</string>
     <string name="x_axis">Ось X</string>
     <string name="y_axis">Ось Y</string>
     <string name="users">Пользователи</string>

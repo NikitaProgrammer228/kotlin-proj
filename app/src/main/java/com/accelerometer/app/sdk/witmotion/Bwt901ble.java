@@ -3,14 +3,9 @@ package com.accelerometer.app.sdk.witmotion;
 import com.accelerometer.app.sdk.witmotion.components.Bwt901bleProcessor;
 import com.accelerometer.app.sdk.witmotion.components.Bwt901bleResolver;
 import com.accelerometer.app.sdk.witmotion.interfaces.IBwt901bleRecordObserver;
-import com.wit.witsdk.api.interfaces.IAttitudeSensorApi;
-import com.wit.witsdk.sensor.modular.connector.enums.ConnectType;
-import com.wit.witsdk.sensor.modular.connector.modular.bluetooth.BluetoothBLE;
-import com.wit.witsdk.sensor.modular.connector.roles.WitCoreConnect;
-import com.wit.witsdk.sensor.modular.device.DeviceModel;
-import com.wit.witsdk.sensor.modular.device.exceptions.OpenDeviceException;
-import com.wit.witsdk.sensor.modular.device.interfaces.IDeviceSendCallback;
-import com.wit.witsdk.sensor.modular.device.interfaces.IListenKeyUpdateObserver;
+import com.accelerometer.app.sdk.witmotion.interfaces.IListenKeyUpdateObserver;
+import com.accelerometer.app.sdk.witmotion.interfaces.IAttitudeSensorApi;
+import com.accelerometer.app.sdk.witmotion.model.DeviceModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,33 +19,25 @@ public class Bwt901ble implements IListenKeyUpdateObserver, IAttitudeSensorApi {
     private final BluetoothBLE bluetoothBLE;
     private final List<IBwt901bleRecordObserver> recordObservers = new ArrayList<>();
 
-    public Bwt901ble(BluetoothBLE bluetoothBLE) {
+    public Bwt901ble(MockBluetoothDevice bluetoothDevice) {
         DeviceModel model = new DeviceModel(
-                bluetoothBLE.getName() + "(" + bluetoothBLE.getMac() + ")",
+                bluetoothDevice.getName() + "(" + bluetoothDevice.getMac() + ")",
                 new Bwt901bleResolver(),
                 new Bwt901bleProcessor(),
                 "61_0"
         );
-        WitCoreConnect witCoreConnect = new WitCoreConnect();
-        witCoreConnect.setConnectType(ConnectType.BluetoothBLE);
-        witCoreConnect.getConfig().getBluetoothBLEOption().setMac(bluetoothBLE.getMac());
-        model.setCoreConnect(witCoreConnect);
-        model.setDeviceData("Mac", bluetoothBLE.getMac());
+        model.setDeviceData("Mac", bluetoothDevice.getMac());
 
         this.deviceModel = model;
-        this.bluetoothBLE = bluetoothBLE;
+        this.bluetoothBLE = bluetoothDevice;
     }
 
-    public void open() throws OpenDeviceException {
+    public void open() {
         deviceModel.openDevice();
     }
 
     public void close() {
         deviceModel.closeDevice();
-    }
-
-    public boolean isOpen() {
-        return deviceModel.isOpen();
     }
 
     public void sendData(byte[] data, IDeviceSendCallback callback, int waitTime, int repetition) {

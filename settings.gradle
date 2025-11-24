@@ -11,11 +11,10 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
+        maven { url 'https://jcenter.bintray.com/' }
     }
 }
 
 rootProject.name = "AccelerometerApp"
 include ':app'
-include ':wit-sdk'
-project(':wit-sdk').projectDir = file('libs/Sample Codes/wit-opensdk-android/wit-sdk')
 
