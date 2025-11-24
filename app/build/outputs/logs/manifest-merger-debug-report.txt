@@ -55,6 +55,7 @@ MERGED from [androidx.documentfile:documentfile:1.0.0] C:\Users\nikit\.gradle\ca
 MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\Users\nikit\.gradle\caches\8.13\transforms\785f6b837a90a9094a60392f5978f4ac\transformed\localbroadcastmanager-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.print:print:1.0.0] C:\Users\nikit\.gradle\caches\8.13\transforms\4c5bbd629713f8849060c5f303161f76\transformed\print-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [:wit-sdk:] C:\Users\nikit\.gradle\caches\8.13\transforms\f309d31216feb65a92a4bfbf456727e5\transformed\wit-sdk\AndroidManifest.xml:2:1-24:12
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-20:12
 	package
 		INJECTED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml
 	android:versionName
@@ -69,12 +70,16 @@ uses-permission#android.permission.BLUETOOTH
 ADDED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:6:5-68
 MERGED from [:wit-sdk:] C:\Users\nikit\.gradle\caches\8.13\transforms\f309d31216feb65a92a4bfbf456727e5\transformed\wit-sdk\AndroidManifest.xml:10:5-68
 MERGED from [:wit-sdk:] C:\Users\nikit\.gradle\caches\8.13\transforms\f309d31216feb65a92a4bfbf456727e5\transformed\wit-sdk\AndroidManifest.xml:10:5-68
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:7:5-68
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:7:5-68
 	android:name
 		ADDED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:6:22-65
 uses-permission#android.permission.BLUETOOTH_ADMIN
 ADDED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:7:5-74
 MERGED from [:wit-sdk:] C:\Users\nikit\.gradle\caches\8.13\transforms\f309d31216feb65a92a4bfbf456727e5\transformed\wit-sdk\AndroidManifest.xml:11:5-74
 MERGED from [:wit-sdk:] C:\Users\nikit\.gradle\caches\8.13\transforms\f309d31216feb65a92a4bfbf456727e5\transformed\wit-sdk\AndroidManifest.xml:11:5-74
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:5-74
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:5-74
 	android:name
 		ADDED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:7:22-71
 uses-permission#android.permission.BLUETOOTH_CONNECT
@@ -93,14 +98,20 @@ uses-permission#android.permission.ACCESS_FINE_LOCATION
 ADDED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:10:5-79
 MERGED from [:wit-sdk:] C:\Users\nikit\.gradle\caches\8.13\transforms\f309d31216feb65a92a4bfbf456727e5\transformed\wit-sdk\AndroidManifest.xml:13:5-79
 MERGED from [:wit-sdk:] C:\Users\nikit\.gradle\caches\8.13\transforms\f309d31216feb65a92a4bfbf456727e5\transformed\wit-sdk\AndroidManifest.xml:13:5-79
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:9:5-79
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:9:5-79
 	android:name
 		ADDED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:10:22-76
 uses-permission#android.permission.ACCESS_COARSE_LOCATION
 ADDED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:11:5-81
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:10:5-81
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:10:5-81
 	android:name
 		ADDED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:11:22-78
 uses-feature#android.hardware.bluetooth_le
 ADDED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:14:5-16:35
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:12:5-14:35
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:12:5-14:35
 	android:required
 		ADDED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:16:9-32
 	android:name
@@ -126,6 +137,8 @@ MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\nikit\.g
 MERGED from [androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\nikit\.gradle\caches\8.13\transforms\20718a1f5103daf591372876d0a15536\transformed\profileinstaller-1.3.0\AndroidManifest.xml:23:5-53:19
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\nikit\.gradle\caches\8.13\transforms\c718b7e6a3d0f62a1440f20fd1ac6355\transformed\startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\nikit\.gradle\caches\8.13\transforms\c718b7e6a3d0f62a1440f20fd1ac6355\transformed\startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:16:5-18:19
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:16:5-18:19
 	android:extractNativeLibs
 		INJECTED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml
 	android:appComponentFactory
@@ -272,6 +285,8 @@ MERGED from [androidx.print:print:1.0.0] C:\Users\nikit\.gradle\caches\8.13\tran
 MERGED from [androidx.print:print:1.0.0] C:\Users\nikit\.gradle\caches\8.13\transforms\4c5bbd629713f8849060c5f303161f76\transformed\print-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [:wit-sdk:] C:\Users\nikit\.gradle\caches\8.13\transforms\f309d31216feb65a92a4bfbf456727e5\transformed\wit-sdk\AndroidManifest.xml:6:5-8:41
 MERGED from [:wit-sdk:] C:\Users\nikit\.gradle\caches\8.13\transforms\f309d31216feb65a92a4bfbf456727e5\transformed\wit-sdk\AndroidManifest.xml:6:5-8:41
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
+MERGED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 	android:targetSdkVersion
 		INJECTED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml
 	android:minSdkVersion
@@ -400,3 +415,7 @@ ADDED from [:wit-sdk:] C:\Users\nikit\.gradle\caches\8.13\transforms\f309d31216f
 		ADDED from [:wit-sdk:] C:\Users\nikit\.gradle\caches\8.13\transforms\f309d31216feb65a92a4bfbf456727e5\transformed\wit-sdk\AndroidManifest.xml:22:19-59
 uses-permission#android.permission.READ_EXTERNAL_STORAGE
 IMPLIED from C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:2:1-42:12 reason: com.wit.sdk requested WRITE_EXTERNAL_STORAGE
+service#com.inuker.bluetooth.library.BluetoothService
+ADDED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:17:9-81
+	android:name
+		ADDED from [:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:17:18-78

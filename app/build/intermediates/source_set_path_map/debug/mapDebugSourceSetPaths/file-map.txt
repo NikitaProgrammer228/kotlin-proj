@@ -41,3 +41,4 @@ com.accelerometer.app-packageDebugResources-39 C:\Users\nikit\Desktop\kotlin-pro
 com.accelerometer.app-debug-40 C:\Users\nikit\Desktop\kotlin-proj\app\build\intermediates\merged_res\debug\mergeDebugResources
 com.accelerometer.app-debug-41 C:\Users\nikit\Desktop\kotlin-proj\app\src\debug\res
 com.accelerometer.app-main-42 C:\Users\nikit\Desktop\kotlin-proj\app\src\main\res
+com.accelerometer.app-debug-43 C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\packaged_res\debug\packageDebugResources

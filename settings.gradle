@@ -20,4 +20,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "AccelerometerApp"
 include ':app'
+include ':bluetoothkit'
+project(':bluetoothkit').projectDir = file('third_party/bluetoothkit')
 

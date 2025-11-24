@@ -87,11 +87,11 @@ scripts\build-and-install.bat   # Windows
 
 ## Интеграция WitMotion SDK
 
-В проект включён официальный SDK производителя (`libs/Sample Codes/wit-opensdk-android/wit-sdk`). Он подключён как модуль `:wit-sdk`, а адаптированный код обёртки находится в пакете `com.accelerometer.app.sdk.witmotion`. При обновлении SDK:
+В проект включён официальный SDK производителя (`app/libs/wit-sdk.aar`). Он подключён напрямую через Gradle и используется «как есть» без дополнительных обёрток. Чтобы обновить SDK:
 
-1. Замените содержимое каталога `libs/Sample Codes/wit-opensdk-android/wit-sdk` на свежую версию от WitMotion.
-2. Убедитесь, что в `settings.gradle` путь к модулю остаётся актуальным.
-3. При необходимости перегенерируйте обёртку (классы `Bwt901ble`, `Bwt901bleProcessor`, `Bwt901bleResolver`).
+1. Замените файл `app/libs/wit-sdk.aar` на свежую версию из пакета WitMotion.
+2. Убедитесь, что зависимость `implementation(name: 'wit-sdk', ext: 'aar')` остаётся в `app/build.gradle` (модуль `:bluetoothkit` уже подтягивает нужный стек `com.inuker.bluetooth` локально).
+3. Пересоберите проект — все импортируемые классы (`Bwt901ble`, `WitBluetoothManager` и т.д.) берутся напрямую из AAR.
 
 ## Структура проекта
 
