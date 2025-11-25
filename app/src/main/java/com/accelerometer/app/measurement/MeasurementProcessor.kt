@@ -3,12 +3,14 @@ package com.accelerometer.app.measurement
 import com.accelerometer.app.data.ProcessedSample
 import com.accelerometer.app.data.SensorSample
 import com.accelerometer.app.utils.MeasurementMath
+import kotlin.math.abs
 import kotlin.math.max
 
 class MeasurementProcessor(
     private val calibrationDurationSec: Double = MeasurementConfig.CALIBRATION_DURATION_SEC,
     private val minDt: Double = 0.002,
-    private val maxDt: Double = 0.05
+    private val maxDt: Double = 0.05,
+    private val noiseThresholdMmS2: Double = MeasurementConfig.ACC_NOISE_THRESHOLD_MM_S2
 ) {
 
     private var calibrationStart: Double? = null
@@ -23,15 +25,11 @@ class MeasurementProcessor(
     private var vy = 0.0
     private var sx = 0.0
     private var sy = 0.0
-    private var avgDt = 0.01
-    private var prevRawAx = 0.0
-    private var prevRawAy = 0.0
-    private var prevHpAx = 0.0
-    private var prevHpAy = 0.0
-    private var prevLpAx = 0.0
-    private var prevLpAy = 0.0
-    private var velocityBiasX = 0.0
-    private var velocityBiasY = 0.0
+    private var prevAx = 0.0
+    private var prevAy = 0.0
+    private var prevVx = 0.0
+    private var prevVy = 0.0
+    private var hasPreviousSample = false
     private var calibrationFinished = false
 
     fun reset() {
@@ -47,15 +45,11 @@ class MeasurementProcessor(
         vy = 0.0
         sx = 0.0
         sy = 0.0
-        avgDt = 0.01
-        prevRawAx = 0.0
-        prevRawAy = 0.0
-        prevHpAx = 0.0
-        prevHpAy = 0.0
-        prevLpAx = 0.0
-        prevLpAy = 0.0
-        velocityBiasX = 0.0
-        velocityBiasY = 0.0
+        prevAx = 0.0
+        prevAy = 0.0
+        prevVx = 0.0
+        prevVy = 0.0
+        hasPreviousSample = false
         calibrationFinished = false
     }
 
@@ -69,50 +63,43 @@ class MeasurementProcessor(
             accumulateBias(sample)
             val elapsed = timestamp - (calibrationStart ?: timestamp)
             if (elapsed >= calibrationDurationSec) {
-                finalizeCalibration()
-                measurementStart = timestamp
-                lastTimestamp = timestamp
+                finalizeCalibration(timestamp)
             }
             return null
         }
 
-        val start = measurementStart ?: run {
-            measurementStart = timestamp
-            lastTimestamp = timestamp
-            timestamp
+        val dt = computeDt(timestamp)
+        val axMm = applyNoiseFloor(MeasurementMath.rawToAccMm(sample.rawAx) - biasX)
+        val ayMm = applyNoiseFloor(MeasurementMath.rawToAccMm(sample.rawAy) - biasY)
+
+        if (!hasPreviousSample) {
+            prevAx = axMm
+            prevAy = ayMm
+            prevVx = vx
+            prevVy = vy
+            hasPreviousSample = true
         }
 
-        val prevTimestamp = lastTimestamp ?: timestamp
-        var dt = timestamp - prevTimestamp
-        if (dt <= 0) dt = minDt
-        if (dt > maxDt) dt = maxDt
-        lastTimestamp = timestamp
+        val avgAx = 0.5 * (axMm + prevAx)
+        val avgAy = 0.5 * (ayMm + prevAy)
+        vx += avgAx * dt
+        vy += avgAy * dt
 
-        avgDt = avgDt + (dt - avgDt) * MeasurementConfig.DT_SMOOTHING
-        val normalizedDt = avgDt.coerceIn(minDt, maxDt)
+        val avgVx = 0.5 * (vx + prevVx)
+        val avgVy = 0.5 * (vy + prevVy)
+        sx += avgVx * dt
+        sy += avgVy * dt
 
-        val axMmRaw = MeasurementMath.rawToAccMm(sample.rawAx) - biasX
-        val ayMmRaw = MeasurementMath.rawToAccMm(sample.rawAy) - biasY
+        prevAx = axMm
+        prevAy = ayMm
+        prevVx = vx
+        prevVy = vy
 
-        val filteredAx = applyFilters(axMmRaw, Axis.X, normalizedDt)
-        val filteredAy = applyFilters(ayMmRaw, Axis.Y, normalizedDt)
-
-        vx += filteredAx * normalizedDt
-        vy += filteredAy * normalizedDt
-
-        velocityBiasX = velocityBiasX + (vx - velocityBiasX) * 0.001
-        velocityBiasY = velocityBiasY + (vy - velocityBiasY) * 0.001
-        vx -= velocityBiasX
-        vy -= velocityBiasY
-
-        sx += vx * normalizedDt
-        sy += vy * normalizedDt
-
-        val elapsed = timestamp - start
+        val elapsed = timestamp - (measurementStart ?: timestamp)
         return ProcessedSample(
             t = elapsed,
-            axMm = filteredAx,
-            ayMm = filteredAy,
+            axMm = axMm,
+            ayMm = ayMm,
             vxMm = vx,
             vyMm = vy,
             sxMm = sx,
@@ -123,59 +110,40 @@ class MeasurementProcessor(
     fun isCalibrating(): Boolean = !calibrationFinished
 
     private fun accumulateBias(sample: SensorSample) {
-        val ax = MeasurementMath.rawToAccMm(sample.rawAx)
-        val ay = MeasurementMath.rawToAccMm(sample.rawAy)
-        biasAccumulatorX += ax
-        biasAccumulatorY += ay
+        biasAccumulatorX += MeasurementMath.rawToAccMm(sample.rawAx)
+        biasAccumulatorY += MeasurementMath.rawToAccMm(sample.rawAy)
         calibrationSamples++
     }
 
-    private fun finalizeCalibration() {
+    private fun finalizeCalibration(timestamp: Double) {
         if (calibrationSamples == 0) return
         biasX = biasAccumulatorX / max(calibrationSamples, 1)
         biasY = biasAccumulatorY / max(calibrationSamples, 1)
         calibrationFinished = true
+        measurementStart = timestamp
+        lastTimestamp = timestamp
         vx = 0.0
         vy = 0.0
         sx = 0.0
         sy = 0.0
+        prevAx = 0.0
+        prevAy = 0.0
+        prevVx = 0.0
+        prevVy = 0.0
+        hasPreviousSample = false
     }
 
-    private fun applyFilters(value: Double, axis: Axis, dt: Double): Double {
-        val hp = when (axis) {
-            Axis.X -> {
-                val rc = 1.0 / (2.0 * Math.PI * MeasurementConfig.HIGH_PASS_CUTOFF_HZ)
-                val alpha = rc / (rc + dt)
-                val output = alpha * (prevHpAx + value - prevRawAx)
-                prevRawAx = value
-                prevHpAx = output
-                output
-            }
-            Axis.Y -> {
-                val rc = 1.0 / (2.0 * Math.PI * MeasurementConfig.HIGH_PASS_CUTOFF_HZ)
-                val alpha = rc / (rc + dt)
-                val output = alpha * (prevHpAy + value - prevRawAy)
-                prevRawAy = value
-                prevHpAy = output
-                output
-            }
-        }
-
-        val rc = 1.0 / (2.0 * Math.PI * MeasurementConfig.LOW_PASS_CUTOFF_HZ)
-        val alpha = dt / (rc + dt)
-
-        return when (axis) {
-            Axis.X -> {
-                prevLpAx += alpha * (hp - prevLpAx)
-                prevLpAx
-            }
-            Axis.Y -> {
-                prevLpAy += alpha * (hp - prevLpAy)
-                prevLpAy
-            }
+    private fun computeDt(timestamp: Double): Double {
+        val prev = lastTimestamp
+        lastTimestamp = timestamp
+        return if (prev == null) {
+            minDt
+        } else {
+            (timestamp - prev).coerceIn(minDt, maxDt)
         }
     }
 
-    private enum class Axis { X, Y }
+    private fun applyNoiseFloor(value: Double): Double =
+        if (abs(value) < noiseThresholdMmS2) 0.0 else value
 }
 
