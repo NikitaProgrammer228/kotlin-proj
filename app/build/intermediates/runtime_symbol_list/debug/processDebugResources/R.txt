@@ -3196,6 +3196,7 @@ int id center_vertical 0x7f08006f
 int id chain 0x7f080070
 int id chain2 0x7f080071
 int id chains 0x7f080072
+int id chartTarget 0x7f080200
 int id chartX 0x7f080073
 int id chartY 0x7f080074
 int id checkbox 0x7f080075
@@ -3565,6 +3566,8 @@ int id transition_position 0x7f0801e0
 int id transition_scene_layoutid_cache 0x7f0801e1
 int id transition_transform 0x7f0801e2
 int id triangle 0x7f0801e3
+int id tvCoordination 0x7f080201
+int id tvMeasurementStatus 0x7f080202
 int id tvMeasurementTime 0x7f0801e4
 int id tvOscillationFrequency 0x7f0801e5
 int id tvStability 0x7f0801e6
@@ -3863,6 +3866,8 @@ int string connect 0x7f0f0042
 int string connected 0x7f0f0043
 int string connecting 0x7f0f0044
 int string connection_fail 0x7f0f0045
+int string coordination_factor_label 0x7f0f00d7
+int string coordination_initial 0x7f0f00d8
 int string disconnect 0x7f0f0046
 int string disconnected 0x7f0f0047
 int string error_a11y_label 0x7f0f0048
@@ -3916,6 +3921,10 @@ int string material_timepicker_minute 0x7f0f0077
 int string material_timepicker_pm 0x7f0f0078
 int string material_timepicker_select_time 0x7f0f0079
 int string material_timepicker_text_input_mode_description 0x7f0f007a
+int string measurement_calibrating 0x7f0f00d9
+int string measurement_finished 0x7f0f00da
+int string measurement_idle 0x7f0f00db
+int string measurement_running 0x7f0f00dc
 int string measurement_time 0x7f0f007b
 int string mtrl_badge_numberless_content_description 0x7f0f007c
 int string mtrl_checkbox_button_icon_path_checked 0x7f0f007d
@@ -4004,6 +4013,7 @@ int string start_record 0x7f0f00cf
 int string status_bar_notification_info_overflow 0x7f0f00d0
 int string stop_record 0x7f0f00d1
 int string t 0x7f0f00d2
+int string target_graph 0x7f0f00dd
 int string users 0x7f0f00d3
 int string versionNumber 0x7f0f00d4
 int string x_axis 0x7f0f00d5

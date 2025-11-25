@@ -2,8 +2,9 @@ package com.accelerometer.app.bluetooth
 
 import android.app.Activity
 import android.content.Context
+import android.os.SystemClock
 import android.util.Log
-import com.accelerometer.app.data.AccelerometerData
+import com.accelerometer.app.data.SensorSample
 import com.wit.witsdk.modular.sensor.modular.connector.modular.bluetooth.BluetoothBLE
 import com.wit.witsdk.modular.sensor.modular.connector.modular.bluetooth.BluetoothSPP
 import com.wit.witsdk.modular.sensor.modular.connector.modular.bluetooth.WitBluetoothManager
@@ -13,9 +14,13 @@ import com.wit.witsdk.modular.sensor.device.exceptions.OpenDeviceException
 import com.wit.witsdk.modular.sensor.modular.processor.constant.WitSensorKey
 import com.wit.witsdk.modular.sensor.example.ble5.Bwt901ble
 import com.wit.witsdk.modular.sensor.example.ble5.interfaces.IBwt901bleRecordObserver
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.math.roundToInt
 
 /**
  * Сервис, обёртывающий SDK WitMotion BLE 5.0.
@@ -27,8 +32,7 @@ class BluetoothAccelerometerService(
     companion object {
         private const val TAG = "BluetoothAccelerometer"
         private val DEVICE_NAME_FILTER = listOf("WT", "BWT", "WT901")
-        private const val HISTORY_LIMIT = 2_000
-        private const val GRAVITY = 9.80665f
+        private const val RAW_MULTIPLIER = 16384f
     }
 
     private var bluetoothManager: WitBluetoothManager? = null
@@ -38,11 +42,8 @@ class BluetoothAccelerometerService(
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
-    private val _accelerometerData = MutableStateFlow<AccelerometerData?>(null)
-    val accelerometerData: StateFlow<AccelerometerData?> = _accelerometerData.asStateFlow()
-
-    private val _dataHistory = MutableStateFlow<List<AccelerometerData>>(emptyList())
-    val dataHistory: StateFlow<List<AccelerometerData>> = _dataHistory.asStateFlow()
+    private val _sensorSamples = MutableSharedFlow<SensorSample>(extraBufferCapacity = 256)
+    val sensorSamples: SharedFlow<SensorSample> = _sensorSamples.asSharedFlow()
 
     init {
         initBluetoothManager()
@@ -106,11 +107,6 @@ class BluetoothAccelerometerService(
         devices.clear()
         connectedDevice = null
         _connectionState.value = ConnectionState.DISCONNECTED
-        _dataHistory.value = emptyList()
-    }
-
-    fun clearHistory() {
-        _dataHistory.value = emptyList()
     }
 
     override fun onFoundBle(bluetoothBLE: BluetoothBLE) {
@@ -140,36 +136,27 @@ class BluetoothAccelerometerService(
     }
 
     override fun onRecord(bwt901ble: Bwt901ble) {
-        val rawX = bwt901ble.getDeviceData(WitSensorKey.AccX)
-        val rawY = bwt901ble.getDeviceData(WitSensorKey.AccY)
-        Log.d(TAG, "onRecord from ${bwt901ble.deviceName} rawX=$rawX rawY=$rawY")
-
-        val x = parseAcceleration(rawX) ?: return
-        val y = parseAcceleration(rawY) ?: return
-        val accelerometerData = AccelerometerData(x, y)
-        _accelerometerData.value = accelerometerData
-
-        val history = _dataHistory.value.toMutableList()
-        history.add(accelerometerData)
-        if (history.size > HISTORY_LIMIT) {
-            history.removeAt(0)
+        val rawX = parseRawAcceleration(raw = bwt901ble.getDeviceData(WitSensorKey.AccX)) ?: return
+        val rawY = parseRawAcceleration(raw = bwt901ble.getDeviceData(WitSensorKey.AccY)) ?: return
+        val timestampSec = SystemClock.elapsedRealtimeNanos() / 1_000_000_000.0
+        if (!_sensorSamples.tryEmit(SensorSample(timestampSec, rawX, rawY))) {
+            Log.w(TAG, "Dropped sensor sample due to backpressure")
         }
-        _dataHistory.value = history
     }
 
-    private fun parseAcceleration(raw: String?): Float? {
+    private fun parseRawAcceleration(raw: String?): Int? {
         if (raw.isNullOrBlank()) {
             Log.w(TAG, "parseAcceleration: empty value")
             return null
         }
         // SDK возвращает значения с запятой в качестве разделителя.
         val normalized = raw.replace(',', '.')
-        val value = normalized.toFloatOrNull()
-        if (value == null) {
+        val gValue = normalized.toFloatOrNull()
+        if (gValue == null) {
             Log.w(TAG, "parseAcceleration: cannot parse $raw")
             return null
         }
-        return value * GRAVITY
+        return (gValue * RAW_MULTIPLIER).roundToInt()
     }
 
     private fun clearDevices() {

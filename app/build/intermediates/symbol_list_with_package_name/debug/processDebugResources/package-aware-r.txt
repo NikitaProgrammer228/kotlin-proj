@@ -3197,6 +3197,7 @@ id center_vertical
 id chain
 id chain2
 id chains
+id chartTarget
 id chartX
 id chartY
 id checkbox
@@ -3566,6 +3567,8 @@ id transition_position
 id transition_scene_layoutid_cache
 id transition_transform
 id triangle
+id tvCoordination
+id tvMeasurementStatus
 id tvMeasurementTime
 id tvOscillationFrequency
 id tvStability
@@ -3864,6 +3867,8 @@ string connect
 string connected
 string connecting
 string connection_fail
+string coordination_factor_label
+string coordination_initial
 string disconnect
 string disconnected
 string error_a11y_label
@@ -3917,6 +3922,10 @@ string material_timepicker_minute
 string material_timepicker_pm
 string material_timepicker_select_time
 string material_timepicker_text_input_mode_description
+string measurement_calibrating
+string measurement_finished
+string measurement_idle
+string measurement_running
 string measurement_time
 string mtrl_badge_numberless_content_description
 string mtrl_checkbox_button_icon_path_checked
@@ -4005,6 +4014,7 @@ string start_record
 string status_bar_notification_info_overflow
 string stop_record
 string t
+string target_graph
 string users
 string versionNumber
 string x_axis

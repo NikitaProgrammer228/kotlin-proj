@@ -9,10 +9,17 @@
     <string name="oscillation_frequency">Частота колебаний</string>
     <string name="stability_initial">Стабильность: 0%%</string>
     <string name="oscillation_frequency_initial">Частота колебаний: 0 Hz</string>
+    <string name="coordination_initial">Координационный фактор: 0.00</string>
+    <string name="coordination_factor_label">Координационный фактор: %1$s</string>
     <string name="x_axis">Ось X</string>
     <string name="y_axis">Ось Y</string>
+    <string name="target_graph">Целевая траектория</string>
     <string name="users">Пользователи</string>
     <string name="add_user">Добавить пользователя</string>
     <string name="measurement_time">Время измерения: %1$d сек</string>
+    <string name="measurement_idle">Измерение не запущено</string>
+    <string name="measurement_calibrating">Калибровка...</string>
+    <string name="measurement_running">Измерение в процессе</string>
+    <string name="measurement_finished">Измерение завершено</string>
 </resources>
 

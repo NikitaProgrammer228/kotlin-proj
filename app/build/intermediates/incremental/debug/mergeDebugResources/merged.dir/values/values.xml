@@ -2013,6 +2013,8 @@
     <string name="connected">Подключено</string>
     <string name="connecting">Connecting</string>
     <string name="connection_fail">Connection fail</string>
+    <string name="coordination_factor_label">Координационный фактор: %1$s</string>
+    <string name="coordination_initial">Координационный фактор: 0.00</string>
     <string name="disconnect">Отключиться</string>
     <string name="disconnected">Отключено</string>
     <string description="Screen reader announcement for when a checkbox is on error. [CHAR LIMIT=NONE]" name="error_a11y_label">
@@ -2068,6 +2070,10 @@
     <string description="Suffix for time in 12-hour standard, after noon. [CHAR_LIMIT=2]" name="material_timepicker_pm">PM</string>
     <string description="Title for the dialog with a time picker. [CHAR_LIMIT=32]" name="material_timepicker_select_time">Select time</string>
     <string name="material_timepicker_text_input_mode_description">Switch to text input mode for the time input.</string>
+    <string name="measurement_calibrating">Калибровка...</string>
+    <string name="measurement_finished">Измерение завершено</string>
+    <string name="measurement_idle">Измерение не запущено</string>
+    <string name="measurement_running">Измерение в процессе</string>
     <string name="measurement_time">Время измерения: %1$d сек</string>
     <string description="Content description for new notification (no number count) [CHAR_LIMIT=NONE]" name="mtrl_badge_numberless_content_description">New notification</string>
     <string name="mtrl_checkbox_button_icon_path_checked" translatable="false">M14,18.2 11.4,15.6 10,17 14,21 22,13 20.6,11.6z</string>
@@ -2164,6 +2170,7 @@
     <string name="status_bar_notification_info_overflow">999+</string>
     <string name="stop_record">Stop recorder</string>
     <string name="t">Temp</string>
+    <string name="target_graph">Целевая траектория</string>
     <string name="users">Пользователи</string>
     <string name="versionNumber">Version number</string>
     <string name="x_axis">Ось X</string>

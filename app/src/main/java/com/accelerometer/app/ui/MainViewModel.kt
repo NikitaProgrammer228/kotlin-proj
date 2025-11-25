@@ -1,67 +1,27 @@
 package com.accelerometer.app.ui
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.accelerometer.app.data.AccelerometerData
-import com.accelerometer.app.utils.OscillationFrequencyCalculator
-import com.accelerometer.app.utils.StabilityCalculator
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.accelerometer.app.data.MeasurementState
+import com.accelerometer.app.data.SensorSample
+import com.accelerometer.app.measurement.MeasurementController
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 class MainViewModel : ViewModel() {
-    
-    private val dataPoints = mutableListOf<AccelerometerData>()
-    private var measurementStartTime: Long = 0
-    
-    private val _stability = MutableStateFlow(0f)
-    val stability: StateFlow<Float> = _stability.asStateFlow()
-    
-    private val _oscillationFrequency = MutableStateFlow(0f)
-    val oscillationFrequency: StateFlow<Float> = _oscillationFrequency.asStateFlow()
-    
-    private val _measurementTime = MutableStateFlow(0L)
-    val measurementTime: StateFlow<Long> = _measurementTime.asStateFlow()
-    
-    fun startMeasurement() {
-        measurementStartTime = System.currentTimeMillis()
-        dataPoints.clear()
+
+    private val measurementController = MeasurementController()
+
+    val measurementState: StateFlow<MeasurementState> = measurementController.state
+
+    fun startMeasurement(durationSec: Double = MeasurementController.DEFAULT_DURATION_SEC) {
+        measurementController.startMeasurement(durationSec)
     }
-    
-    fun addDataPoint(data: AccelerometerData) {
-        dataPoints.add(data)
-        calculateMetrics()
+
+    fun stopMeasurement() {
+        measurementController.stopMeasurement()
     }
-    
-    private fun calculateMetrics() {
-        if (dataPoints.isEmpty()) return
-        
-        // Вычисляем стабильность
-        val stabilityValue = StabilityCalculator.calculate(dataPoints)
-        _stability.value = stabilityValue
-        
-        // Вычисляем время измерения в секундах
-        val timeInSeconds = if (measurementStartTime > 0) {
-            (System.currentTimeMillis() - measurementStartTime) / 1000f
-        } else {
-            0f
-        }
-        
-        _measurementTime.value = timeInSeconds.toLong()
-        
-        // Вычисляем частоту колебаний
-        if (timeInSeconds > 0) {
-            val frequency = OscillationFrequencyCalculator.calculate(dataPoints, timeInSeconds)
-            _oscillationFrequency.value = frequency
-        }
-    }
-    
-    fun reset() {
-        dataPoints.clear()
-        _stability.value = 0f
-        _oscillationFrequency.value = 0f
-        _measurementTime.value = 0L
-        measurementStartTime = 0
+
+    fun onSensorSample(sample: SensorSample) {
+        measurementController.onSample(sample)
     }
 }
 

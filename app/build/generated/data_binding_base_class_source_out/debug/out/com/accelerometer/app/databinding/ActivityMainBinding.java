@@ -29,6 +29,9 @@ public final class ActivityMainBinding implements ViewBinding {
   public final MaterialButton btnUsers;
 
   @NonNull
+  public final LineChart chartTarget;
+
+  @NonNull
   public final LineChart chartX;
 
   @NonNull
@@ -41,6 +44,12 @@ public final class ActivityMainBinding implements ViewBinding {
   public final Toolbar toolbar;
 
   @NonNull
+  public final TextView tvCoordination;
+
+  @NonNull
+  public final TextView tvMeasurementStatus;
+
+  @NonNull
   public final TextView tvMeasurementTime;
 
   @NonNull
@@ -51,16 +60,21 @@ public final class ActivityMainBinding implements ViewBinding {
 
   private ActivityMainBinding(@NonNull CoordinatorLayout rootView,
       @NonNull MaterialButton btnConnect, @NonNull MaterialButton btnUsers,
-      @NonNull LineChart chartX, @NonNull LineChart chartY, @NonNull TextView connectionStatus,
-      @NonNull Toolbar toolbar, @NonNull TextView tvMeasurementTime,
-      @NonNull TextView tvOscillationFrequency, @NonNull TextView tvStability) {
+      @NonNull LineChart chartTarget, @NonNull LineChart chartX, @NonNull LineChart chartY,
+      @NonNull TextView connectionStatus, @NonNull Toolbar toolbar,
+      @NonNull TextView tvCoordination, @NonNull TextView tvMeasurementStatus,
+      @NonNull TextView tvMeasurementTime, @NonNull TextView tvOscillationFrequency,
+      @NonNull TextView tvStability) {
     this.rootView = rootView;
     this.btnConnect = btnConnect;
     this.btnUsers = btnUsers;
+    this.chartTarget = chartTarget;
     this.chartX = chartX;
     this.chartY = chartY;
     this.connectionStatus = connectionStatus;
     this.toolbar = toolbar;
+    this.tvCoordination = tvCoordination;
+    this.tvMeasurementStatus = tvMeasurementStatus;
     this.tvMeasurementTime = tvMeasurementTime;
     this.tvOscillationFrequency = tvOscillationFrequency;
     this.tvStability = tvStability;
@@ -105,6 +119,12 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.chartTarget;
+      LineChart chartTarget = ViewBindings.findChildViewById(rootView, id);
+      if (chartTarget == null) {
+        break missingId;
+      }
+
       id = R.id.chartX;
       LineChart chartX = ViewBindings.findChildViewById(rootView, id);
       if (chartX == null) {
@@ -129,6 +149,18 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.tvCoordination;
+      TextView tvCoordination = ViewBindings.findChildViewById(rootView, id);
+      if (tvCoordination == null) {
+        break missingId;
+      }
+
+      id = R.id.tvMeasurementStatus;
+      TextView tvMeasurementStatus = ViewBindings.findChildViewById(rootView, id);
+      if (tvMeasurementStatus == null) {
+        break missingId;
+      }
+
       id = R.id.tvMeasurementTime;
       TextView tvMeasurementTime = ViewBindings.findChildViewById(rootView, id);
       if (tvMeasurementTime == null) {
@@ -147,9 +179,9 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ActivityMainBinding((CoordinatorLayout) rootView, btnConnect, btnUsers, chartX,
-          chartY, connectionStatus, toolbar, tvMeasurementTime, tvOscillationFrequency,
-          tvStability);
+      return new ActivityMainBinding((CoordinatorLayout) rootView, btnConnect, btnUsers,
+          chartTarget, chartX, chartY, connectionStatus, toolbar, tvCoordination,
+          tvMeasurementStatus, tvMeasurementTime, tvOscillationFrequency, tvStability);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));
