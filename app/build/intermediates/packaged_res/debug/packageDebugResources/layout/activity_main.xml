@@ -154,8 +154,8 @@
                         android:textStyle="bold"
                         android:layout_marginBottom="8dp" />
 
-                    <com.github.mikephil.charting.charts.LineChart
-                        android:id="@+id/chartTarget"
+                    <com.accelerometer.app.ui.view.TargetTrajectoryView
+                        android:id="@+id/targetTrajectory"
                         android:layout_width="match_parent"
                         android:layout_height="300dp" />
 

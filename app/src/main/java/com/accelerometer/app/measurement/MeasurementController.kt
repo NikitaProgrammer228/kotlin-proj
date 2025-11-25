@@ -12,14 +12,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class MeasurementController(
-    private val correctionFactor: Double = 1.0,
-    private val coordinationScale: Double = 1.0,
-    private val amplitudeThresholdMm: Double = 0.5,
-    private val calibrationDurationSec: Double = 2.0
+    private val correctionFactor: Double = MeasurementConfig.OSCILLATION_CORRECTION,
+    private val coordinationScale: Double = MeasurementConfig.COORDINATION_SCALE,
+    private val amplitudeThresholdMm: Double = MeasurementConfig.AMPLITUDE_THRESHOLD_MM,
+    private val calibrationDurationSec: Double = MeasurementConfig.CALIBRATION_DURATION_SEC
 ) {
 
     companion object {
-        const val DEFAULT_DURATION_SEC = 10.0
+        const val DEFAULT_DURATION_SEC = MeasurementConfig.MEASUREMENT_DURATION_SEC
     }
 
     private val processor = MeasurementProcessor(calibrationDurationSec)

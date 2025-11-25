@@ -15,9 +15,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.accelerometer.app.R
 import com.accelerometer.app.bluetooth.BluetoothAccelerometerService
+import com.accelerometer.app.measurement.MeasurementConfig
 import com.accelerometer.app.data.MeasurementState
 import com.accelerometer.app.data.MeasurementStatus
-import com.accelerometer.app.data.ProcessedSample
 import com.accelerometer.app.databinding.ActivityMainBinding
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
     private lateinit var bluetoothService: BluetoothAccelerometerService
-    private val measurementDurationSec = 10.0
+    private val measurementDurationSec = MeasurementConfig.MEASUREMENT_DURATION_SEC
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -63,7 +63,6 @@ class MainActivity : AppCompatActivity() {
     private fun setupCharts() {
         setupTimeChart(binding.chartX)
         setupTimeChart(binding.chartY)
-        setupTargetChart()
     }
     
     private fun setupTimeChart(chart: com.github.mikephil.charting.charts.LineChart) {
@@ -89,21 +88,6 @@ class MainActivity : AppCompatActivity() {
         chart.animateX(500)
     }
 
-    private fun setupTargetChart() {
-        val chart = binding.chartTarget
-        chart.description.isEnabled = false
-        chart.setTouchEnabled(true)
-        chart.setDragEnabled(true)
-        chart.setScaleEnabled(true)
-        chart.setPinchZoom(true)
-        chart.axisRight.isEnabled = false
-        chart.legend.isEnabled = false
-        chart.xAxis.position = XAxis.XAxisPosition.BOTTOM
-        chart.axisLeft.setDrawGridLines(true)
-        chart.xAxis.setDrawGridLines(true)
-        chart.setViewPortOffsets(40f, 40f, 40f, 40f)
-    }
-    
     private fun setupObservers() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -218,7 +202,7 @@ class MainActivity : AppCompatActivity() {
 
         updateTimeChart(binding.chartX, state.processedSamples.map { Entry(it.t.toFloat(), it.sxMm.toFloat()) }, android.graphics.Color.BLUE)
         updateTimeChart(binding.chartY, state.processedSamples.map { Entry(it.t.toFloat(), it.syMm.toFloat()) }, android.graphics.Color.RED)
-        updateTargetChart(state.processedSamples)
+        binding.targetTrajectory.setSamples(state.processedSamples)
     }
 
     private fun updateTimeChart(
@@ -238,44 +222,22 @@ class MainActivity : AppCompatActivity() {
             setDrawValues(false)
         }
         chart.data = LineData(dataSet)
+        val axisRange = if (entries.isNotEmpty()) {
+            max(50f, entries.maxOf { abs(it.y) } * 1.2f)
+        } else {
+            50f
+        }
+        chart.axisLeft.axisMinimum = -axisRange
+        chart.axisLeft.axisMaximum = axisRange
         chart.notifyDataSetChanged()
         chart.invalidate()
     }
-
-    private fun updateTargetChart(samples: List<ProcessedSample>) {
-        if (samples.isEmpty()) {
-            binding.chartTarget.clear()
-            binding.chartTarget.invalidate()
-            return
-        }
-        val entries = samples.map { Entry(it.sxMm.toFloat(), it.syMm.toFloat()) }
-        val dataSet = LineDataSet(entries, "trajectory").apply {
-            color = android.graphics.Color.CYAN
-            setDrawCircles(false)
-            lineWidth = 2f
-            setDrawValues(false)
-        }
-        binding.chartTarget.data = LineData(dataSet)
-
-        val maxRange = entries.maxOf { max(abs(it.x), abs(it.y)) }
-        val range = max(50f, maxRange * 1.2f)
-        with(binding.chartTarget) {
-            xAxis.axisMinimum = -range
-            xAxis.axisMaximum = range
-            axisLeft.axisMinimum = -range
-            axisLeft.axisMaximum = range
-            notifyDataSetChanged()
-            invalidate()
-        }
-    }
-    
     private fun clearCharts() {
         binding.chartX.clear()
         binding.chartY.clear()
-        binding.chartTarget.clear()
         binding.chartX.invalidate()
         binding.chartY.invalidate()
-        binding.chartTarget.invalidate()
+        binding.targetTrajectory.clear()
     }
     
     override fun onDestroy() {

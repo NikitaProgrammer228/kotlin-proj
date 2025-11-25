@@ -12,13 +12,13 @@ id btnAddUser
 id btnConnect
 id btnDelete
 id btnUsers
-id chartTarget
 id chartX
 id chartY
 id connectionStatus
 id etUserEmail
 id etUserName
 id recyclerViewUsers
+id targetTrajectory
 id toolbar
 id tvCoordination
 id tvMeasurementStatus

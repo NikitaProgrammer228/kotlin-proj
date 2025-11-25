@@ -12,6 +12,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.accelerometer.app.R;
+import com.accelerometer.app.ui.view.TargetTrajectoryView;
 import com.github.mikephil.charting.charts.LineChart;
 import com.google.android.material.button.MaterialButton;
 import java.lang.NullPointerException;
@@ -29,9 +30,6 @@ public final class ActivityMainBinding implements ViewBinding {
   public final MaterialButton btnUsers;
 
   @NonNull
-  public final LineChart chartTarget;
-
-  @NonNull
   public final LineChart chartX;
 
   @NonNull
@@ -39,6 +37,9 @@ public final class ActivityMainBinding implements ViewBinding {
 
   @NonNull
   public final TextView connectionStatus;
+
+  @NonNull
+  public final TargetTrajectoryView targetTrajectory;
 
   @NonNull
   public final Toolbar toolbar;
@@ -60,18 +61,18 @@ public final class ActivityMainBinding implements ViewBinding {
 
   private ActivityMainBinding(@NonNull CoordinatorLayout rootView,
       @NonNull MaterialButton btnConnect, @NonNull MaterialButton btnUsers,
-      @NonNull LineChart chartTarget, @NonNull LineChart chartX, @NonNull LineChart chartY,
-      @NonNull TextView connectionStatus, @NonNull Toolbar toolbar,
+      @NonNull LineChart chartX, @NonNull LineChart chartY, @NonNull TextView connectionStatus,
+      @NonNull TargetTrajectoryView targetTrajectory, @NonNull Toolbar toolbar,
       @NonNull TextView tvCoordination, @NonNull TextView tvMeasurementStatus,
       @NonNull TextView tvMeasurementTime, @NonNull TextView tvOscillationFrequency,
       @NonNull TextView tvStability) {
     this.rootView = rootView;
     this.btnConnect = btnConnect;
     this.btnUsers = btnUsers;
-    this.chartTarget = chartTarget;
     this.chartX = chartX;
     this.chartY = chartY;
     this.connectionStatus = connectionStatus;
+    this.targetTrajectory = targetTrajectory;
     this.toolbar = toolbar;
     this.tvCoordination = tvCoordination;
     this.tvMeasurementStatus = tvMeasurementStatus;
@@ -119,12 +120,6 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.chartTarget;
-      LineChart chartTarget = ViewBindings.findChildViewById(rootView, id);
-      if (chartTarget == null) {
-        break missingId;
-      }
-
       id = R.id.chartX;
       LineChart chartX = ViewBindings.findChildViewById(rootView, id);
       if (chartX == null) {
@@ -140,6 +135,12 @@ public final class ActivityMainBinding implements ViewBinding {
       id = R.id.connectionStatus;
       TextView connectionStatus = ViewBindings.findChildViewById(rootView, id);
       if (connectionStatus == null) {
+        break missingId;
+      }
+
+      id = R.id.targetTrajectory;
+      TargetTrajectoryView targetTrajectory = ViewBindings.findChildViewById(rootView, id);
+      if (targetTrajectory == null) {
         break missingId;
       }
 
@@ -179,9 +180,9 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ActivityMainBinding((CoordinatorLayout) rootView, btnConnect, btnUsers,
-          chartTarget, chartX, chartY, connectionStatus, toolbar, tvCoordination,
-          tvMeasurementStatus, tvMeasurementTime, tvOscillationFrequency, tvStability);
+      return new ActivityMainBinding((CoordinatorLayout) rootView, btnConnect, btnUsers, chartX,
+          chartY, connectionStatus, targetTrajectory, toolbar, tvCoordination, tvMeasurementStatus,
+          tvMeasurementTime, tvOscillationFrequency, tvStability);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));
