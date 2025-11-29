@@ -18,6 +18,7 @@ id connectionStatus
 id etUserEmail
 id etUserName
 id recyclerViewUsers
+id spinnerDuration
 id targetTrajectory
 id toolbar
 id tvCoordination
@@ -52,6 +53,7 @@ string scanning
 string stability
 string stability_initial
 string target_graph
+string test_duration
 string users
 string x_axis
 string y_axis

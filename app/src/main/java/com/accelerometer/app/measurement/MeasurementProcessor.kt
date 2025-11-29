@@ -41,7 +41,8 @@ class MeasurementProcessor(
             vxMm = state.vxMm,
             vyMm = state.vyMm,
             sxMm = state.sxMm,
-            syMm = state.syMm
+            syMm = state.syMm,
+            hasArtifact = state.hasArtifact
         )
     }
 

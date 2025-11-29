@@ -26,6 +26,7 @@
     <string name="stability">Стабильность</string>
     <string name="stability_initial">Стабильность: 0%%</string>
     <string name="target_graph">Целевая траектория</string>
+    <string name="test_duration">Длительность теста:</string>
     <string name="users">Пользователи</string>
     <string name="x_axis">Ось X</string>
     <string name="y_axis">Ось Y</string>

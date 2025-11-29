@@ -24,7 +24,8 @@ data class ProcessedSample(
     val vxMm: Double,
     val vyMm: Double,
     val sxMm: Double,
-    val syMm: Double
+    val syMm: Double,
+    val hasArtifact: Boolean = false  // Флаг артефакта (до ограничения позиции)
 )
 
 /**
@@ -54,6 +55,8 @@ data class MeasurementState(
     val elapsedSec: Double = 0.0,
     val processedSamples: List<ProcessedSample> = emptyList(),
     val metrics: MeasurementMetrics = MeasurementMetrics(),
-    val result: MeasurementResult? = null
+    val result: MeasurementResult? = null,
+    val isValid: Boolean = true,  // Валидность теста (false при обрывах BLE или артефактах)
+    val validationMessage: String? = null  // Сообщение о проблеме
 )
 

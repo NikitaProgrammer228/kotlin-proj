@@ -77,7 +77,7 @@ object MeasurementMath {
 
     private fun extractAmplitudes(values: List<Double>, thresholdMm: Double): List<Double> {
         if (values.size < 3) return emptyList()
-        val extrema = mutableListOf<Pair<Double, Boolean>>() // value + true если максимум
+        val extrema = mutableListOf<Pair<Double, Int>>() // value + индекс в массиве
         var prev = values[0]
         var curr = values[1]
         var prevSlope = curr - prev
@@ -88,7 +88,7 @@ object MeasurementMath {
             val isValley = prevSlope < 0 && slope >= 0
             val magnitude = abs(curr)
             if ((isPeak || isValley) && magnitude >= thresholdMm) {
-                extrema += curr to isPeak
+                extrema += curr to i
             }
             prev = curr
             curr = next
@@ -96,11 +96,28 @@ object MeasurementMath {
         }
 
         if (extrema.size < 2) return emptyList()
+        
+        // Фильтруем по минимальному интервалу (2-3 отсчёта = 40-60 мс при 50 Гц)
+        // Согласно ТЗ: между двумя амплитудами должно пройти минимум 2-3 отсчёта
+        val minInterval = 2 // минимум 2 отсчёта (40 мс)
+        val filteredExtrema = mutableListOf<Pair<Double, Int>>()
+        filteredExtrema += extrema[0]
+        
+        for (i in 1 until extrema.size) {
+            val (_, prevIndex) = filteredExtrema.last()
+            val (value, currIndex) = extrema[i]
+            if (currIndex - prevIndex >= minInterval) {
+                filteredExtrema += value to currIndex
+            }
+        }
+        
+        if (filteredExtrema.size < 2) return emptyList()
+        
+        // Вычисляем амплитуды (чередование максимумов и минимумов)
         val amplitudes = mutableListOf<Double>()
-        for (i in 0 until extrema.size - 1) {
-            val (value1, isPeak1) = extrema[i]
-            val (value2, isPeak2) = extrema[i + 1]
-            if (isPeak1 == isPeak2) continue
+        for (i in 0 until filteredExtrema.size - 1) {
+            val (value1, _) = filteredExtrema[i]
+            val (value2, _) = filteredExtrema[i + 1]
             val amplitude = abs(value1 - value2)
             if (amplitude >= thresholdMm) {
                 amplitudes += amplitude

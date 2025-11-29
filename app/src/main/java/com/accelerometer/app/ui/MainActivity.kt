@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -31,8 +32,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
     private lateinit var bluetoothService: BluetoothAccelerometerService
-    private val measurementDurationSec = MeasurementConfig.MEASUREMENT_DURATION_SEC
+    private var measurementDurationSec = MeasurementConfig.MEASUREMENT_DURATION_SEC
     private val chartRangeMm = MeasurementConfig.CHART_AXIS_RANGE_MM.toFloat()
+    
+    // Автозапуск теста
+    private var autoStartEnabled = true
+    private val motionThresholdG = 0.05  // Порог движения для автозапуска (0.05g)
+    private var lastAccelerationMagnitude = 0.0
+    
+    companion object {
+        private val TEST_DURATIONS = listOf(10.0, 20.0, 30.0)
+    }
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -54,9 +64,35 @@ class MainActivity : AppCompatActivity() {
         
         bluetoothService = BluetoothAccelerometerService(this)
         
+        setupDurationSpinner()
         setupCharts()
         setupObservers()
         setupClickListeners()
+    }
+    
+    private fun setupDurationSpinner() {
+        val durations = TEST_DURATIONS.map { "${it.toInt()} сек" }
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, durations)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerDuration.adapter = adapter
+        
+        // Устанавливаем значение по умолчанию (10 сек)
+        val defaultIndex = TEST_DURATIONS.indexOf(measurementDurationSec)
+        if (defaultIndex >= 0) {
+            binding.spinnerDuration.setSelection(defaultIndex)
+        }
+        
+        binding.spinnerDuration.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                measurementDurationSec = TEST_DURATIONS[position]
+                // Если тест уже запущен, перезапускаем с новым временем
+                if (bluetoothService.connectionState.value == BluetoothAccelerometerService.ConnectionState.CONNECTED) {
+                    viewModel.stopMeasurement()
+                    viewModel.startMeasurement(measurementDurationSec)
+                }
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
     }
     
     private fun setupCharts() {
@@ -95,6 +131,19 @@ class MainActivity : AppCompatActivity() {
                 }
                 launch {
                     bluetoothService.sensorSamples.collect { sample ->
+                        // Автозапуск теста по порогу движения
+                        if (autoStartEnabled && viewModel.measurementState.value.status == MeasurementStatus.IDLE) {
+                            val accMagnitude = kotlin.math.sqrt(
+                                sample.accXg * sample.accXg + 
+                                sample.accYg * sample.accYg + 
+                                sample.accZg * sample.accZg
+                            )
+                            if (accMagnitude > motionThresholdG) {
+                                viewModel.startMeasurement(measurementDurationSec)
+                                binding.tvMeasurementStatus.text = getString(R.string.measurement_running)
+                            }
+                            lastAccelerationMagnitude = accMagnitude
+                        }
                         viewModel.onSensorSample(sample)
                     }
                 }
@@ -186,6 +235,15 @@ class MainActivity : AppCompatActivity() {
         }
         binding.tvMeasurementStatus.text = statusText
         binding.tvMeasurementTime.text = getString(R.string.measurement_time, state.elapsedSec.toInt())
+        
+        // Отображение валидности теста
+        if (!state.isValid && state.validationMessage != null) {
+            binding.tvMeasurementStatus.text = "${statusText}\n⚠ ${state.validationMessage}"
+            binding.tvMeasurementStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
+        } else {
+            // Возвращаем стандартный цвет текста
+            binding.tvMeasurementStatus.setTextColor(ContextCompat.getColor(this, android.R.color.black))
+        }
 
         val stability = state.metrics.stability
         val frequency = state.metrics.oscillationFrequency

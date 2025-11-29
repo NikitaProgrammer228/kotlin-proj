@@ -3497,6 +3497,7 @@ int id snapMargins 0x7f08019c
 int id south 0x7f08019d
 int id spacer 0x7f08019e
 int id special_effects_controller_view_tag 0x7f08019f
+int id spinnerDuration 0x7f080204
 int id spline 0x7f0801a0
 int id split_action_bar 0x7f0801a1
 int id spread 0x7f0801a2
@@ -4014,6 +4015,7 @@ int string status_bar_notification_info_overflow 0x7f0f00d0
 int string stop_record 0x7f0f00d1
 int string t 0x7f0f00d2
 int string target_graph 0x7f0f00dd
+int string test_duration 0x7f0f00de
 int string users 0x7f0f00d3
 int string versionNumber 0x7f0f00d4
 int string x_axis 0x7f0f00d5

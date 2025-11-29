@@ -3498,6 +3498,7 @@ id snapMargins
 id south
 id spacer
 id special_effects_controller_view_tag
+id spinnerDuration
 id spline
 id split_action_bar
 id spread
@@ -4015,6 +4016,7 @@ string status_bar_notification_info_overflow
 string stop_record
 string t
 string target_graph
+string test_duration
 string users
 string versionNumber
 string x_axis

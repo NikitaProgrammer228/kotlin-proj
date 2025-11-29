@@ -4,6 +4,7 @@ package com.accelerometer.app.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,6 +40,9 @@ public final class ActivityMainBinding implements ViewBinding {
   public final TextView connectionStatus;
 
   @NonNull
+  public final Spinner spinnerDuration;
+
+  @NonNull
   public final TargetTrajectoryView targetTrajectory;
 
   @NonNull
@@ -62,16 +66,17 @@ public final class ActivityMainBinding implements ViewBinding {
   private ActivityMainBinding(@NonNull CoordinatorLayout rootView,
       @NonNull MaterialButton btnConnect, @NonNull MaterialButton btnUsers,
       @NonNull LineChart chartX, @NonNull LineChart chartY, @NonNull TextView connectionStatus,
-      @NonNull TargetTrajectoryView targetTrajectory, @NonNull Toolbar toolbar,
-      @NonNull TextView tvCoordination, @NonNull TextView tvMeasurementStatus,
-      @NonNull TextView tvMeasurementTime, @NonNull TextView tvOscillationFrequency,
-      @NonNull TextView tvStability) {
+      @NonNull Spinner spinnerDuration, @NonNull TargetTrajectoryView targetTrajectory,
+      @NonNull Toolbar toolbar, @NonNull TextView tvCoordination,
+      @NonNull TextView tvMeasurementStatus, @NonNull TextView tvMeasurementTime,
+      @NonNull TextView tvOscillationFrequency, @NonNull TextView tvStability) {
     this.rootView = rootView;
     this.btnConnect = btnConnect;
     this.btnUsers = btnUsers;
     this.chartX = chartX;
     this.chartY = chartY;
     this.connectionStatus = connectionStatus;
+    this.spinnerDuration = spinnerDuration;
     this.targetTrajectory = targetTrajectory;
     this.toolbar = toolbar;
     this.tvCoordination = tvCoordination;
@@ -138,6 +143,12 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.spinnerDuration;
+      Spinner spinnerDuration = ViewBindings.findChildViewById(rootView, id);
+      if (spinnerDuration == null) {
+        break missingId;
+      }
+
       id = R.id.targetTrajectory;
       TargetTrajectoryView targetTrajectory = ViewBindings.findChildViewById(rootView, id);
       if (targetTrajectory == null) {
@@ -181,8 +192,8 @@ public final class ActivityMainBinding implements ViewBinding {
       }
 
       return new ActivityMainBinding((CoordinatorLayout) rootView, btnConnect, btnUsers, chartX,
-          chartY, connectionStatus, targetTrajectory, toolbar, tvCoordination, tvMeasurementStatus,
-          tvMeasurementTime, tvOscillationFrequency, tvStability);
+          chartY, connectionStatus, spinnerDuration, targetTrajectory, toolbar, tvCoordination,
+          tvMeasurementStatus, tvMeasurementTime, tvOscillationFrequency, tvStability);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

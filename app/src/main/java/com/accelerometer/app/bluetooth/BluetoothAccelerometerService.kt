@@ -121,11 +121,35 @@ class BluetoothAccelerometerService(
         sensor.registerRecordObserver(this)
         try {
             sensor.open()
+            // Настраиваем датчик на 50 Гц (RRATE_50HZ = 0x08)
+            configureSensor(sensor)
             stopDiscovery()
             _connectionState.value = ConnectionState.CONNECTED
         } catch (ex: OpenDeviceException) {
             Log.e(TAG, "Failed to open device ${sensor.deviceName}", ex)
             _connectionState.value = ConnectionState.DISCONNECTED
+        }
+    }
+
+    /**
+     * Настройка датчика: частота 50 Гц, разблокировка регистров
+     */
+    private fun configureSensor(sensor: Bwt901ble) {
+        try {
+            // Разблокируем регистры для записи
+            sensor.unlockReg()
+            Thread.sleep(100)
+            
+            // Устанавливаем частоту 50 Гц (0x08 = RRATE_50HZ)
+            sensor.setReturnRate(0x08.toByte())
+            Thread.sleep(100)
+            
+            // Сохраняем настройки (команда: FF AA 00 00 00)
+            sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x00, 0x00, 0x00))
+            
+            Log.i(TAG, "Sensor configured: 50 Hz output rate")
+        } catch (ex: Exception) {
+            Log.w(TAG, "Failed to configure sensor", ex)
         }
     }
 
