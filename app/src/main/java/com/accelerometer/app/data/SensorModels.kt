@@ -1,13 +1,17 @@
 package com.accelerometer.app.data
 
 /**
- * Один сырый сэмпл с датчика.
- * [rawAx] и [rawAy] — значения из WT901 в формате «raw» (см. формулу raw/16384).
+ * Один сэмпл с датчика WT901: ускорение в g + ориентация (градусы).
+ * SDK WitMotion возвращает значения уже в единицах g.
  */
 data class SensorSample(
     val timestampSec: Double,
-    val rawAx: Int,
-    val rawAy: Int
+    val accXg: Double,
+    val accYg: Double,
+    val accZg: Double,
+    val angleXDeg: Double,
+    val angleYDeg: Double,
+    val angleZDeg: Double
 )
 
 /**

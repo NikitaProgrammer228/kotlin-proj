@@ -14,15 +14,14 @@ import kotlinx.coroutines.flow.asStateFlow
 class MeasurementController(
     private val correctionFactor: Double = MeasurementConfig.OSCILLATION_CORRECTION,
     private val coordinationScale: Double = MeasurementConfig.COORDINATION_SCALE,
-    private val amplitudeThresholdMm: Double = MeasurementConfig.AMPLITUDE_THRESHOLD_MM,
-    private val calibrationDurationSec: Double = MeasurementConfig.CALIBRATION_DURATION_SEC
+    private val amplitudeThresholdMm: Double = MeasurementConfig.AMPLITUDE_THRESHOLD_MM
 ) {
 
     companion object {
         const val DEFAULT_DURATION_SEC = MeasurementConfig.MEASUREMENT_DURATION_SEC
     }
 
-    private val processor = MeasurementProcessor(calibrationDurationSec)
+    private val processor = MeasurementProcessor()
     private val processed = mutableListOf<ProcessedSample>()
     private var status: MeasurementStatus = MeasurementStatus.IDLE
     private var targetDurationSec = DEFAULT_DURATION_SEC
@@ -34,8 +33,8 @@ class MeasurementController(
         targetDurationSec = durationSec
         processor.reset()
         processed.clear()
-        status = MeasurementStatus.CALIBRATING
-        _state.value = MeasurementState(status = status)
+        status = MeasurementStatus.RUNNING
+        _state.value = MeasurementState(status = status, elapsedSec = 0.0)
     }
 
     fun stopMeasurement(resetToIdle: Boolean = true) {
@@ -51,14 +50,6 @@ class MeasurementController(
     fun onSample(sample: SensorSample) {
         if (status == MeasurementStatus.IDLE || status == MeasurementStatus.FINISHED) return
         val processedSample = processor.process(sample)
-        if (processedSample == null) {
-            _state.value = MeasurementState(
-                status = MeasurementStatus.CALIBRATING,
-                processedSamples = emptyList()
-            )
-            return
-        }
-
         processed += processedSample
         val elapsed = processedSample.t
         status = if (elapsed >= targetDurationSec) MeasurementStatus.FINISHED else MeasurementStatus.RUNNING

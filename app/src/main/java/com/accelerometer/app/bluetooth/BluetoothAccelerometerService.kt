@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlin.math.roundToInt
 
 /**
  * Сервис, обёртывающий SDK WitMotion BLE 5.0.
@@ -32,7 +31,6 @@ class BluetoothAccelerometerService(
     companion object {
         private const val TAG = "BluetoothAccelerometer"
         private val DEVICE_NAME_FILTER = listOf("WT", "BWT", "WT901")
-        private const val RAW_MULTIPLIER = 16384f
     }
 
     private var bluetoothManager: WitBluetoothManager? = null
@@ -136,27 +134,47 @@ class BluetoothAccelerometerService(
     }
 
     override fun onRecord(bwt901ble: Bwt901ble) {
-        val rawX = parseRawAcceleration(raw = bwt901ble.getDeviceData(WitSensorKey.AccX)) ?: return
-        val rawY = parseRawAcceleration(raw = bwt901ble.getDeviceData(WitSensorKey.AccY)) ?: return
+        // SDK возвращает значения уже в g (не raw), поэтому парсим напрямую как Double
+        val accXg = parseAccelerationG(bwt901ble.getDeviceData(WitSensorKey.AccX)) ?: return
+        val accYg = parseAccelerationG(bwt901ble.getDeviceData(WitSensorKey.AccY)) ?: return
+        val accZg = parseAccelerationG(bwt901ble.getDeviceData(WitSensorKey.AccZ)) ?: return
+        val angleX = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleX)) ?: return
+        val angleY = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleY)) ?: return
+        val angleZ = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleZ)) ?: return
         val timestampSec = SystemClock.elapsedRealtimeNanos() / 1_000_000_000.0
-        if (!_sensorSamples.tryEmit(SensorSample(timestampSec, rawX, rawY))) {
+        val sample = SensorSample(
+            timestampSec = timestampSec,
+            accXg = accXg,
+            accYg = accYg,
+            accZg = accZg,
+            angleXDeg = angleX,
+            angleYDeg = angleY,
+            angleZDeg = angleZ
+        )
+        if (!_sensorSamples.tryEmit(sample)) {
             Log.w(TAG, "Dropped sensor sample due to backpressure")
         }
     }
 
-    private fun parseRawAcceleration(raw: String?): Int? {
+    private fun parseAccelerationG(raw: String?): Double? {
         if (raw.isNullOrBlank()) {
-            Log.w(TAG, "parseAcceleration: empty value")
             return null
         }
-        // SDK возвращает значения с запятой в качестве разделителя.
+        // SDK возвращает значения с запятой в качестве разделителя (например "-0,0170")
         val normalized = raw.replace(',', '.')
-        val gValue = normalized.toFloatOrNull()
-        if (gValue == null) {
-            Log.w(TAG, "parseAcceleration: cannot parse $raw")
+        return normalized.toDoubleOrNull()
+    }
+
+    private fun parseAngleDegrees(raw: String?): Double? {
+        if (raw.isNullOrBlank()) {
+            Log.w(TAG, "parseAngle: empty value")
             return null
         }
-        return (gValue * RAW_MULTIPLIER).roundToInt()
+        val normalized = raw.replace(',', '.')
+        return normalized.toDoubleOrNull() ?: run {
+            Log.w(TAG, "parseAngle: cannot parse $raw")
+            null
+        }
     }
 
     private fun clearDevices() {

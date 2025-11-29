@@ -25,8 +25,6 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import kotlinx.coroutines.launch
 import java.util.Locale
-import kotlin.math.abs
-import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
     
@@ -34,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
     private lateinit var bluetoothService: BluetoothAccelerometerService
     private val measurementDurationSec = MeasurementConfig.MEASUREMENT_DURATION_SEC
+    private val chartRangeMm = MeasurementConfig.CHART_AXIS_RANGE_MM.toFloat()
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -173,7 +172,7 @@ class MainActivity : AppCompatActivity() {
                 binding.connectionStatus.text = getString(R.string.connected)
                 binding.btnConnect.text = getString(R.string.disconnect)
                 viewModel.startMeasurement(measurementDurationSec)
-                binding.tvMeasurementStatus.text = getString(R.string.measurement_calibrating)
+                binding.tvMeasurementStatus.text = getString(R.string.measurement_running)
             }
         }
     }
@@ -210,25 +209,22 @@ class MainActivity : AppCompatActivity() {
         entries: List<Entry>,
         color: Int
     ) {
+        val durationFloat = measurementDurationSec.toFloat()
         if (entries.isEmpty()) {
             chart.clear()
-            chart.invalidate()
-            return
-        }
-        val dataSet = LineDataSet(entries, "data").apply {
-            this.color = color
-            setDrawCircles(false)
-            lineWidth = 2f
-            setDrawValues(false)
-        }
-        chart.data = LineData(dataSet)
-        val axisRange = if (entries.isNotEmpty()) {
-            max(50f, entries.maxOf { abs(it.y) } * 1.2f)
         } else {
-            50f
+            val dataSet = LineDataSet(entries, "data").apply {
+                this.color = color
+                setDrawCircles(false)
+                lineWidth = 2f
+                setDrawValues(false)
+            }
+            chart.data = LineData(dataSet)
         }
-        chart.axisLeft.axisMinimum = -axisRange
-        chart.axisLeft.axisMaximum = axisRange
+        chart.axisLeft.axisMinimum = -chartRangeMm
+        chart.axisLeft.axisMaximum = chartRangeMm
+        chart.xAxis.axisMinimum = 0f
+        chart.xAxis.axisMaximum = durationFloat
         chart.notifyDataSetChanged()
         chart.invalidate()
     }

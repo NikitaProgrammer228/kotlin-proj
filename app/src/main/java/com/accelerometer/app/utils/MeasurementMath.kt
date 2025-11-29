@@ -7,14 +7,12 @@ import kotlin.math.max
 import kotlin.math.sqrt
 
 /**
- * Набор формул из разделов 8.1 и 8.3 руководства MicroSwing.
+ * Набор формул для расчета метрик измерения.
  */
 object MeasurementMath {
 
-    private const val RAW_SCALE = 16384.0            // делитель из формулы raw/16384
-    private const val GRAVITY_MM = 9.80665 * 1000.0  // ускорение свободного падения в мм/с^2
-
-    fun rawToAccMm(raw: Int): Double = raw / RAW_SCALE * GRAVITY_MM
+    const val GRAVITY_MS2 = 9.80665
+    const val GRAVITY_MM_S2 = GRAVITY_MS2 * 1000.0  // ускорение свободного падения в мм/с^2
 
     fun calcStability(samples: List<ProcessedSample>): Double {
         if (samples.size < 2) return 100.0
