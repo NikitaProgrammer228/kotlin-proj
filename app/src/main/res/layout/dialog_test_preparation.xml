@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="288dp"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="30dp"
+    app:cardElevation="45dp"
+    app:cardBackgroundColor="#FFFFFF"
+    android:layout_gravity="center">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="24dp">
+
+        <!-- Заголовок -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Подготовка\nк тесту"
+            android:textSize="22sp"
+            android:textColor="#000000"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Круговой таймер -->
+        <FrameLayout
+            android:layout_width="132dp"
+            android:layout_height="132dp"
+            android:layout_marginBottom="16dp">
+
+            <!-- Круговой прогресс -->
+            <com.accelerometer.app.ui.CircularTimerView
+                android:id="@+id/circularTimer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- Цифра и текст "сек" по центру -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/timerSeconds"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="10"
+                    android:textSize="48sp"
+                    android:textStyle="bold"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="сек"
+                    android:textSize="16sp"
+                    android:textColor="#666666"
+                    android:layout_marginTop="-8dp" />
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <!-- Иконка ног -->
+        <ImageView
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:src="@drawable/ic_feet"
+            android:contentDescription="Ноги"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Кнопка ПАУЗА -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pauseButton"
+            android:layout_width="144dp"
+            android:layout_height="50dp"
+            android:text="ПАУЗА"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="#4A4A4A"
+            app:cornerRadius="20dp" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
+

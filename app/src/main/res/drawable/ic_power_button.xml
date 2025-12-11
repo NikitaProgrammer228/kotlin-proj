@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Кольцо -->
+    <path
+        android:pathData="M50,3.5
+            a46.5,46.5 0 1,1 0,93
+            a46.5,46.5 0 1,1 0,-93"
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="7" />
+
+</vector>

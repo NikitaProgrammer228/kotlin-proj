@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="30dp"
+    android:height="30dp"
+    android:viewportWidth="30"
+    android:viewportHeight="30">
+
+    <!-- Синяя плашка -->
+    <path
+        android:pathData="M15,0a15,15 0 1,1 0,30a15,15 0 1,1 0,-30z"
+        android:fillColor="#3E7EE4" />
+
+    <!-- Лёгкий градиент-свет сверху (имитация) -->
+    <path
+        android:pathData="M15,0a15,15 0 1,1 0,30a15,15 0 1,1 0,-30z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.3"
+        android:fillType="nonZero" />
+
+    <!-- Символ Bluetooth 11x15, центрируем -->
+    <group
+        android:translateX="9.5"
+        android:translateY="7.5">
+        <path
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M6.19396 0.922465L8.64021 2.79169C8.86692 2.96775 9.00021 3.24259 9.00021 3.5343C9.00021 3.826 8.86692 4.10085 8.64021 4.27691L4.8062 7.20671L8.64021 10.1365C8.86692 10.3127 9.00021 10.5875 9.00021 10.8792C9.00021 11.1708 8.86692 11.4457 8.64021 11.6218L6.19396 13.491C5.92534 13.6924 5.56839 13.7196 5.27365 13.5612C4.97891 13.4028 4.79762 13.0863 4.8062 12.7451V1.66831C4.79762 1.32714 4.97891 1.01068 5.27365 0.852284C5.56839 0.693894 5.92534 0.721106 6.19396 0.922465Z" />
+        <path
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M0 4.45227L4.80605 7.20669L0 9.96114" />
+    </group>
+
+</vector>

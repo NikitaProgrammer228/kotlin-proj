@@ -20,6 +20,12 @@ import com.accelerometer.app.measurement.MeasurementConfig
 import com.accelerometer.app.data.MeasurementState
 import com.accelerometer.app.data.MeasurementStatus
 import com.accelerometer.app.databinding.ActivityMainBinding
+import com.accelerometer.app.export.ExportService
+import com.accelerometer.app.export.PdfExportService
+import com.accelerometer.app.database.AppDatabase
+import com.accelerometer.app.service.MeasurementRepository
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -34,6 +40,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bluetoothService: BluetoothAccelerometerService
     private var measurementDurationSec = MeasurementConfig.MEASUREMENT_DURATION_SEC
     private val chartRangeMm = MeasurementConfig.CHART_AXIS_RANGE_MM.toFloat()
+    private lateinit var measurementRepository: MeasurementRepository
+    private var currentUserId: Long = 0  // TODO: получить из выбранного пользователя
     
     // Автозапуск теста
     private var autoStartEnabled = true
@@ -63,6 +71,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         
         bluetoothService = BluetoothAccelerometerService(this)
+        measurementRepository = MeasurementRepository(AppDatabase.getDatabase(this))
         
         setupDurationSpinner()
         setupCharts()
@@ -166,6 +175,16 @@ class MainActivity : AppCompatActivity() {
         binding.btnUsers.setOnClickListener {
             startActivity(Intent(this, UserManagementActivity::class.java))
         }
+        
+        binding.btnBalanceTest.setOnClickListener {
+            val intent = Intent(this, BalanceTestActivity::class.java)
+            intent.putExtra("userId", currentUserId)
+            startActivity(intent)
+        }
+        
+        binding.btnExport.setOnClickListener {
+            exportMeasurement()
+        }
     }
     
     private fun checkPermissionsAndConnect() {
@@ -236,6 +255,15 @@ class MainActivity : AppCompatActivity() {
         binding.tvMeasurementStatus.text = statusText
         binding.tvMeasurementTime.text = getString(R.string.measurement_time, state.elapsedSec.toInt())
         
+        // Включаем кнопку экспорта только после завершения измерения
+        binding.btnExport.isEnabled = state.status == MeasurementStatus.FINISHED && state.result != null
+        
+        // Сохраняем результат в БД при завершении измерения (только один раз)
+        if (state.status == MeasurementStatus.FINISHED && state.result != null && currentUserId > 0) {
+            // TODO: добавить флаг, чтобы не сохранять дважды
+            // saveMeasurementToDatabase(state)
+        }
+        
         // Отображение валидности теста
         if (!state.isValid && state.validationMessage != null) {
             binding.tvMeasurementStatus.text = "${statusText}\n⚠ ${state.validationMessage}"
@@ -292,6 +320,116 @@ class MainActivity : AppCompatActivity() {
         binding.chartX.invalidate()
         binding.chartY.invalidate()
         binding.targetTrajectory.clear()
+    }
+    
+    private fun exportMeasurement() {
+        val state = viewModel.measurementState.value
+        val result = state.result ?: return
+        
+        // Показываем диалог выбора формата
+        val formats = arrayOf(getString(R.string.export_csv), getString(R.string.export_pdf))
+        android.app.AlertDialog.Builder(this)
+            .setTitle(getString(R.string.export))
+            .setItems(formats) { _, which ->
+                when (which) {
+                    0 -> exportToCsv(result)
+                    1 -> exportToPdf(result)
+                }
+            }
+            .show()
+    }
+    
+    private fun exportToCsv(result: com.accelerometer.app.data.MeasurementResult) {
+        try {
+            val exportService = ExportService(this)
+            val userName = "User" // TODO: получить из выбранного пользователя
+            val file = exportService.exportToCsv(result, userName)
+            if (file != null) {
+                showExportSuccess(file, "CSV")
+            } else {
+                Toast.makeText(this, getString(R.string.export_error), Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "${getString(R.string.export_error)}: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun exportToPdf(result: com.accelerometer.app.data.MeasurementResult) {
+        try {
+            val exportService = PdfExportService(this)
+            val userName = "User" // TODO: получить из выбранного пользователя
+            val file = exportService.exportToPdf(result, userName)
+            if (file != null) {
+                showExportSuccess(file, "PDF")
+            } else {
+                Toast.makeText(this, getString(R.string.export_error), Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "${getString(R.string.export_error)}: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun showExportSuccess(file: java.io.File, format: String) {
+        val filePath = file.absolutePath
+        val message = "Файл сохранён:\n$filePath\n\nНажмите OK, чтобы открыть файл"
+        
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Экспорт $format завершён")
+            .setMessage(message)
+            .setPositiveButton("Открыть файл") { _, _ ->
+                openFile(file)
+            }
+            .setNegativeButton("OK", null)
+            .show()
+    }
+    
+    private fun openFile(file: java.io.File) {
+        try {
+            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                androidx.core.content.FileProvider.getUriForFile(
+                    this,
+                    "${packageName}.fileprovider",
+                    file
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                android.net.Uri.fromFile(file)
+            }
+            
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, getMimeType(file.extension))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            
+            startActivity(Intent.createChooser(intent, "Открыть файл"))
+        } catch (e: Exception) {
+            Toast.makeText(this, "Не удалось открыть файл: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun getMimeType(extension: String): String {
+        return when (extension.lowercase()) {
+            "csv" -> "text/csv"
+            "pdf" -> "application/pdf"
+            else -> "*/*"
+        }
+    }
+    
+    private fun saveMeasurementToDatabase(state: MeasurementState) {
+        val result = state.result ?: return
+        lifecycleScope.launch {
+            try {
+                measurementRepository.saveMeasurement(
+                    userId = currentUserId,
+                    result = result,
+                    isValid = state.isValid,
+                    validationMessage = state.validationMessage
+                )
+            } catch (e: Exception) {
+                // Ошибка сохранения - не критично, просто логируем
+                android.util.Log.e("MainActivity", "Failed to save measurement", e)
+            }
+        }
     }
     
     override fun onDestroy() {

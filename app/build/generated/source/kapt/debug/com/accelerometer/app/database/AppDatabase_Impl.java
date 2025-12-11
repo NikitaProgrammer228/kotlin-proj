@@ -28,20 +28,24 @@ import javax.annotation.processing.Generated;
 public final class AppDatabase_Impl extends AppDatabase {
   private volatile UserDao _userDao;
 
+  private volatile MeasurementDao _measurementDao;
+
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `email` TEXT, `createdAt` INTEGER NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `measurements` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `timestamp` INTEGER NOT NULL, `durationSec` REAL NOT NULL, `metrics` TEXT NOT NULL, `samples` TEXT NOT NULL, `isValid` INTEGER NOT NULL, `validationMessage` TEXT, `foot` TEXT, `testNumber` INTEGER)");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ea9dd7acab5e4fa1347df0040322976a')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3ec14fee7b0f2f150763ef7e6483d214')");
       }
 
       @Override
       public void dropAllTables(@NonNull final SupportSQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS `users`");
+        db.execSQL("DROP TABLE IF EXISTS `measurements`");
         final List<? extends RoomDatabase.Callback> _callbacks = mCallbacks;
         if (_callbacks != null) {
           for (RoomDatabase.Callback _callback : _callbacks) {
@@ -99,9 +103,29 @@ public final class AppDatabase_Impl extends AppDatabase {
                   + " Expected:\n" + _infoUsers + "\n"
                   + " Found:\n" + _existingUsers);
         }
+        final HashMap<String, TableInfo.Column> _columnsMeasurements = new HashMap<String, TableInfo.Column>(10);
+        _columnsMeasurements.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsMeasurements.put("userId", new TableInfo.Column("userId", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsMeasurements.put("timestamp", new TableInfo.Column("timestamp", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsMeasurements.put("durationSec", new TableInfo.Column("durationSec", "REAL", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsMeasurements.put("metrics", new TableInfo.Column("metrics", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsMeasurements.put("samples", new TableInfo.Column("samples", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsMeasurements.put("isValid", new TableInfo.Column("isValid", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsMeasurements.put("validationMessage", new TableInfo.Column("validationMessage", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsMeasurements.put("foot", new TableInfo.Column("foot", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsMeasurements.put("testNumber", new TableInfo.Column("testNumber", "INTEGER", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        final HashSet<TableInfo.ForeignKey> _foreignKeysMeasurements = new HashSet<TableInfo.ForeignKey>(0);
+        final HashSet<TableInfo.Index> _indicesMeasurements = new HashSet<TableInfo.Index>(0);
+        final TableInfo _infoMeasurements = new TableInfo("measurements", _columnsMeasurements, _foreignKeysMeasurements, _indicesMeasurements);
+        final TableInfo _existingMeasurements = TableInfo.read(db, "measurements");
+        if (!_infoMeasurements.equals(_existingMeasurements)) {
+          return new RoomOpenHelper.ValidationResult(false, "measurements(com.accelerometer.app.database.Measurement).\n"
+                  + " Expected:\n" + _infoMeasurements + "\n"
+                  + " Found:\n" + _existingMeasurements);
+        }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "ea9dd7acab5e4fa1347df0040322976a", "b4d90b154a7bb8e38b49b1b90758b7eb");
+    }, "3ec14fee7b0f2f150763ef7e6483d214", "b306b8af917c7621ebed3030c722ff45");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;
@@ -112,7 +136,7 @@ public final class AppDatabase_Impl extends AppDatabase {
   protected InvalidationTracker createInvalidationTracker() {
     final HashMap<String, String> _shadowTablesMap = new HashMap<String, String>(0);
     final HashMap<String, Set<String>> _viewTables = new HashMap<String, Set<String>>(0);
-    return new InvalidationTracker(this, _shadowTablesMap, _viewTables, "users");
+    return new InvalidationTracker(this, _shadowTablesMap, _viewTables, "users","measurements");
   }
 
   @Override
@@ -122,6 +146,7 @@ public final class AppDatabase_Impl extends AppDatabase {
     try {
       super.beginTransaction();
       _db.execSQL("DELETE FROM `users`");
+      _db.execSQL("DELETE FROM `measurements`");
       super.setTransactionSuccessful();
     } finally {
       super.endTransaction();
@@ -137,6 +162,7 @@ public final class AppDatabase_Impl extends AppDatabase {
   protected Map<Class<?>, List<Class<?>>> getRequiredTypeConverters() {
     final HashMap<Class<?>, List<Class<?>>> _typeConvertersMap = new HashMap<Class<?>, List<Class<?>>>();
     _typeConvertersMap.put(UserDao.class, UserDao_Impl.getRequiredConverters());
+    _typeConvertersMap.put(MeasurementDao.class, MeasurementDao_Impl.getRequiredConverters());
     return _typeConvertersMap;
   }
 
@@ -165,6 +191,20 @@ public final class AppDatabase_Impl extends AppDatabase {
           _userDao = new UserDao_Impl(this);
         }
         return _userDao;
+      }
+    }
+  }
+
+  @Override
+  public MeasurementDao measurementDao() {
+    if (_measurementDao != null) {
+      return _measurementDao;
+    } else {
+      synchronized(this) {
+        if(_measurementDao == null) {
+          _measurementDao = new MeasurementDao_Impl(this);
+        }
+        return _measurementDao;
       }
     }
   }

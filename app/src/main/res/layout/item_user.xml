@@ -37,6 +37,22 @@
         </LinearLayout>
 
         <ImageButton
+            android:id="@+id/btnCompare"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_sort_by_size"
+            android:contentDescription="Сравнить"
+            android:layout_marginEnd="8dp" />
+
+        <ImageButton
+            android:id="@+id/btnPkt"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_agenda"
+            android:contentDescription="PKT-протокол"
+            android:layout_marginEnd="8dp" />
+
+        <ImageButton
             android:id="@+id/btnDelete"
             android:layout_width="48dp"
             android:layout_height="48dp"

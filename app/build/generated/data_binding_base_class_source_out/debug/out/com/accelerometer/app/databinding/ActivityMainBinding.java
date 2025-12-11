@@ -25,7 +25,13 @@ public final class ActivityMainBinding implements ViewBinding {
   private final CoordinatorLayout rootView;
 
   @NonNull
+  public final MaterialButton btnBalanceTest;
+
+  @NonNull
   public final MaterialButton btnConnect;
+
+  @NonNull
+  public final MaterialButton btnExport;
 
   @NonNull
   public final MaterialButton btnUsers;
@@ -64,14 +70,17 @@ public final class ActivityMainBinding implements ViewBinding {
   public final TextView tvStability;
 
   private ActivityMainBinding(@NonNull CoordinatorLayout rootView,
-      @NonNull MaterialButton btnConnect, @NonNull MaterialButton btnUsers,
+      @NonNull MaterialButton btnBalanceTest, @NonNull MaterialButton btnConnect,
+      @NonNull MaterialButton btnExport, @NonNull MaterialButton btnUsers,
       @NonNull LineChart chartX, @NonNull LineChart chartY, @NonNull TextView connectionStatus,
       @NonNull Spinner spinnerDuration, @NonNull TargetTrajectoryView targetTrajectory,
       @NonNull Toolbar toolbar, @NonNull TextView tvCoordination,
       @NonNull TextView tvMeasurementStatus, @NonNull TextView tvMeasurementTime,
       @NonNull TextView tvOscillationFrequency, @NonNull TextView tvStability) {
     this.rootView = rootView;
+    this.btnBalanceTest = btnBalanceTest;
     this.btnConnect = btnConnect;
+    this.btnExport = btnExport;
     this.btnUsers = btnUsers;
     this.chartX = chartX;
     this.chartY = chartY;
@@ -113,9 +122,21 @@ public final class ActivityMainBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.btnBalanceTest;
+      MaterialButton btnBalanceTest = ViewBindings.findChildViewById(rootView, id);
+      if (btnBalanceTest == null) {
+        break missingId;
+      }
+
       id = R.id.btnConnect;
       MaterialButton btnConnect = ViewBindings.findChildViewById(rootView, id);
       if (btnConnect == null) {
+        break missingId;
+      }
+
+      id = R.id.btnExport;
+      MaterialButton btnExport = ViewBindings.findChildViewById(rootView, id);
+      if (btnExport == null) {
         break missingId;
       }
 
@@ -191,9 +212,10 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ActivityMainBinding((CoordinatorLayout) rootView, btnConnect, btnUsers, chartX,
-          chartY, connectionStatus, spinnerDuration, targetTrajectory, toolbar, tvCoordination,
-          tvMeasurementStatus, tvMeasurementTime, tvOscillationFrequency, tvStability);
+      return new ActivityMainBinding((CoordinatorLayout) rootView, btnBalanceTest, btnConnect,
+          btnExport, btnUsers, chartX, chartY, connectionStatus, spinnerDuration, targetTrajectory,
+          toolbar, tvCoordination, tvMeasurementStatus, tvMeasurementTime, tvOscillationFrequency,
+          tvStability);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

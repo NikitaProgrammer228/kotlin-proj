@@ -36,12 +36,22 @@ class BluetoothAccelerometerService(
     private var bluetoothManager: WitBluetoothManager? = null
     private val devices = mutableListOf<Bwt901ble>()
     private var connectedDevice: Bwt901ble? = null
+    private val discoveredDevices = mutableListOf<DiscoveredDevice>()
 
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
     private val _sensorSamples = MutableSharedFlow<SensorSample>(extraBufferCapacity = 256)
     val sensorSamples: SharedFlow<SensorSample> = _sensorSamples.asSharedFlow()
+
+    private val _batteryLevel = MutableStateFlow(0)
+    val batteryLevel: StateFlow<Int> = _batteryLevel.asStateFlow()
+
+    data class DiscoveredDevice(
+        val name: String?,
+        val mac: String,
+        val bluetoothBLE: BluetoothBLE
+    )
 
     init {
         initBluetoothManager()
@@ -81,6 +91,51 @@ class BluetoothAccelerometerService(
     }
 
     /**
+     * Начать поиск устройств без автоподключения.
+     * Найденные устройства добавляются в список discoveredDevices.
+     */
+    fun startDiscoveryForSelection() {
+        initBluetoothManager()
+        val manager = bluetoothManager ?: return
+        discoveredDevices.clear()
+        try {
+            manager.registerObserver(this)
+            manager.startDiscovery()
+        } catch (ex: BluetoothBLEException) {
+            Log.e(TAG, "Discovery failed", ex)
+        }
+    }
+
+    /**
+     * Получить список найденных устройств.
+     */
+    fun getDiscoveredDevices(): List<DiscoveredDevice> {
+        return discoveredDevices.toList()
+    }
+
+    /**
+     * Подключиться к выбранному устройству.
+     */
+    fun connectToDevice(device: DiscoveredDevice) {
+        val manager = bluetoothManager ?: return
+        _connectionState.value = ConnectionState.CONNECTING
+        stopDiscovery()
+        
+        try {
+            val sensor = Bwt901ble(device.bluetoothBLE)
+            devices.add(sensor)
+            connectedDevice = sensor
+            sensor.registerRecordObserver(this)
+            sensor.open()
+            configureSensor(sensor)
+            _connectionState.value = ConnectionState.CONNECTED
+        } catch (ex: OpenDeviceException) {
+            Log.e(TAG, "Failed to open device ${device.name}", ex)
+            _connectionState.value = ConnectionState.DISCONNECTED
+        }
+    }
+
+    /**
      * Остановить поиск устройств.
      */
     fun stopDiscovery() {
@@ -112,6 +167,15 @@ class BluetoothAccelerometerService(
             Log.d(TAG, "Skip device ${bluetoothBLE.name} not matching filter")
             return
         }
+        
+        // Если это режим выбора устройств, добавляем в список без подключения
+        if (discoveredDevices.none { it.mac == bluetoothBLE.mac }) {
+            discoveredDevices.add(DiscoveredDevice(bluetoothBLE.name, bluetoothBLE.mac, bluetoothBLE))
+            Log.d(TAG, "Discovered device: ${bluetoothBLE.name} (${bluetoothBLE.mac})")
+            return
+        }
+        
+        // Старый режим автоподключения (для обратной совместимости)
         if (devices.any { it.mac == bluetoothBLE.mac }) {
             return
         }
@@ -177,6 +241,36 @@ class BluetoothAccelerometerService(
         )
         if (!_sensorSamples.tryEmit(sample)) {
             Log.w(TAG, "Dropped sensor sample due to backpressure")
+        }
+
+        // Получаем уровень заряда батареи (напряжение в мВ, конвертируем в проценты)
+        try {
+            val voltageRaw = bwt901ble.getDeviceData("ElectricQuantityPercentage")
+            if (!voltageRaw.isNullOrBlank()) {
+                val voltage = voltageRaw.replace(',', '.').toDoubleOrNull()
+                if (voltage != null) {
+                    // Если SDK возвращает проценты напрямую
+                    val batteryPercent = voltage.toInt().coerceIn(0, 100)
+                    _batteryLevel.value = batteryPercent
+                    Log.d(TAG, "Battery level: $batteryPercent%")
+                }
+            }
+        } catch (ex: Exception) {
+            // Некоторые сенсоры могут не поддерживать PowerPercent, пробуем Voltage
+            try {
+                val voltageRaw = bwt901ble.getDeviceData("Voltage")
+                if (!voltageRaw.isNullOrBlank()) {
+                    val voltage = voltageRaw.replace(',', '.').toDoubleOrNull()
+                    if (voltage != null) {
+                        // Конвертируем напряжение в проценты (3.3V = 0%, 4.2V = 100%)
+                        val batteryPercent = ((voltage - 3.3) / (4.2 - 3.3) * 100).toInt().coerceIn(0, 100)
+                        _batteryLevel.value = batteryPercent
+                        Log.d(TAG, "Battery voltage: ${voltage}V -> $batteryPercent%")
+                    }
+                }
+            } catch (ex2: Exception) {
+                Log.w(TAG, "Failed to get battery level", ex2)
+            }
         }
     }
 

@@ -22,5 +22,33 @@
     <string name="measurement_running">Измерение в процессе</string>
     <string name="measurement_finished">Измерение завершено</string>
     <string name="test_duration">Длительность теста:</string>
+    <string name="export">Экспорт результатов</string>
+    <string name="export_csv">Экспорт в CSV</string>
+    <string name="export_pdf">Экспорт в PDF</string>
+    <string name="export_success">Файл сохранён: %1$s</string>
+    <string name="export_error">Ошибка экспорта</string>
+    
+    <!-- Balance Test Strings -->
+    <string name="balance_test">Баланс-тест</string>
+    <string name="testing_completed">Тестирование завершено</string>
+    <string name="stabilization_total">Стабилизация (общее): %1$s%%</string>
+    <string name="oscillation_frequency_hz">Частота колебаний: %1$s Гц</string>
+    <string name="coordination_factor">Фактор координации: %1$s</string>
+    <string name="pain_syndrome_level">Уровень болевого синдрома:</string>
+    <string name="difficulty_level">Уровень сложности:</string>
+    <string name="difficulty_simple">Простой</string>
+    <string name="difficulty_medium">Средний</string>
+    <string name="difficulty_hard">Сложный</string>
+    <string name="save_to_database">СОХРАНИТЬ В БАЗУ</string>
+    <string name="export_report_pdf">ЭКСПОРТ ОТЧЕТА (.PDF)</string>
+    <string name="new_test">НОВЫЙ ТЕСТ</string>
+    <string name="graph_scale">Масштаб графика:</string>
+    <string name="view">Вид:</string>
+    <string name="view_time">Время</string>
+    <string name="view_target">Мишень</string>
+    <string name="sensor_status">Состояние сенсора</string>
+    <string name="battery_level">Уровень заряда аккумулятора</string>
+    <string name="device_connected">Устройство подключено</string>
+    <string name="device_disconnected">Устройство отключено</string>
 </resources>
 

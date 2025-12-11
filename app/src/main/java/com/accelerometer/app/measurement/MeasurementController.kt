@@ -40,7 +40,11 @@ class MeasurementController(
         targetDurationSec = durationSec
         processor.reset()
         processed.clear()
-        status = MeasurementStatus.RUNNING
+        status = if (MeasurementConfig.ENABLE_CALIBRATION) {
+            MeasurementStatus.CALIBRATING
+        } else {
+            MeasurementStatus.RUNNING
+        }
         isValid = true
         validationMessage = null
         lastSampleTimestamp = null
@@ -71,7 +75,22 @@ class MeasurementController(
         }
         lastSampleTimestamp = sample.timestampSec
         
+        // process() возвращает null во время калибровки
         val processedSample = processor.process(sample)
+        
+        // Если калибровка ещё идёт, обновляем статус и выходим
+        if (processedSample == null) {
+            if (status != MeasurementStatus.CALIBRATING) {
+                status = MeasurementStatus.CALIBRATING
+                _state.value = MeasurementState(status = status, elapsedSec = 0.0, isValid = true)
+            }
+            return
+        }
+        
+        // Калибровка завершена — переключаемся на RUNNING
+        if (status == MeasurementStatus.CALIBRATING) {
+            status = MeasurementStatus.RUNNING
+        }
         
         // Проверка артефактов (posX/posY > ±40 мм согласно ТЗ)
         // Используем флаг из процессора, который проверяет ДО ограничения
@@ -83,7 +102,7 @@ class MeasurementController(
             // Показываем обрыв BLE только если нет артефакта
             validationMessage = "Обрыв BLE: пропуск ${bleGap} мс"
         }
-        
+
         processed += processedSample
         val elapsed = processedSample.t
         status = if (elapsed >= targetDurationSec) MeasurementStatus.FINISHED else MeasurementStatus.RUNNING
@@ -91,7 +110,8 @@ class MeasurementController(
         val metrics = MeasurementMath.buildMetrics(
             processed,
             durationSec = elapsed.coerceAtLeast(0.0001),
-            amplitudeThresholdMm = amplitudeThresholdMm,
+            amplitudeThresholdMmFreq = MeasurementConfig.AMPLITUDE_THRESHOLD_MM_FREQ,
+            amplitudeThresholdMmCoord = MeasurementConfig.AMPLITUDE_THRESHOLD_MM_COORD,
             correctionFactor = correctionFactor,
             scalingCoefficient = coordinationScale
         )
@@ -124,7 +144,8 @@ class MeasurementController(
         val metrics = precomputed ?: MeasurementMath.buildMetrics(
             processed,
             durationSec = duration.coerceAtLeast(0.0001),
-            amplitudeThresholdMm = amplitudeThresholdMm,
+            amplitudeThresholdMmFreq = MeasurementConfig.AMPLITUDE_THRESHOLD_MM_FREQ,
+            amplitudeThresholdMmCoord = MeasurementConfig.AMPLITUDE_THRESHOLD_MM_COORD,
             correctionFactor = correctionFactor,
             scalingCoefficient = coordinationScale
         )

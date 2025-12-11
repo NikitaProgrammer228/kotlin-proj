@@ -9,24 +9,56 @@ object MeasurementConfig {
     // Частота опроса датчика (MicroSwing использует 50 Гц)
     const val EXPECTED_SAMPLE_RATE_HZ = 50.0
     
-    // Калибровка — время для определения базового положения
-    const val MOTION_CALIBRATION_DURATION_SEC = 0.5
+    // Калибровка — время для определения базового положения И прогрева high-pass фильтра
+    // 3 сек = 150 сэмплов при 50 Гц — достаточно для полной стабилизации фильтра
+    const val MOTION_CALIBRATION_DURATION_SEC = 3.0
     
-    // High-pass filter alpha: убирает медленный дрейф углов
-    // 0.98 ≈ cutoff ~0.32 Hz при 50 Hz
-    const val HIGH_PASS_ALPHA = 0.98
+    // High-pass filter alpha: ещё чуть ниже, чтобы приглушить мелкие пики и снизить подсчёт частоты
+    const val HIGH_PASS_ALPHA = 0.86
     
-    // Коэффициент: градусы → миллиметры
-    // Подбирается эмпирически для соответствия MicroSwing
-    // Уменьшено, чтобы большие углы не давали артефакты
-    const val ANGLE_TO_MM_SCALE = 1.5
+    // Коэффициенты: градусы → миллиметры (по осям отдельно)
+    // Масштабирование под амплитуды немецкого ПО
+    const val ANGLE_TO_MM_SCALE_X = 4.3
+    const val ANGLE_TO_MM_SCALE_Y = 4.3
+
+    // Дополнительный визуальный множитель только для мишени (target graph),
+    // чтобы траектория «доставала» до красной зоны как в немецком ПО,
+    // не влияя на физику данных и график времени.
+    const val TARGET_GRAPH_SCALE = 1.18f
+
+    // Управление калибровкой/стабилизацией.
+    // Если выключить, график и метрики стартуют сразу, без прогрева.
+    const val ENABLE_CALIBRATION = false
+    // Длительность стабилизации high-pass после калибровки (сек).
+    // При 0.0 стабилизация выключена.
+    const val STABILIZATION_DURATION_SEC = 0.0
+
+    // Инверсия осей (1.0 = как есть, -1.0 = переворот знака)
+    // По наблюдению: наклон «от себя» идёт вверх у нас и вниз у немцев — инвертируем Y
+    const val AXIS_INVERT_X = 1.0   // X оставляем
+    const val AXIS_INVERT_Y = -1.0  // Y переворачиваем, чтобы совпасть с немецким ПО
     
-    // Максимальное смещение в мм (согласно ТЗ: артефакт при > ±40 мм)
+    // Максимальное смещение в мм — возвращаем к рабочим ±40
     const val MOTION_POSITION_LIMIT_MM = 40.0
 
     // Параметры для расчёта метрик
-    const val AMPLITUDE_THRESHOLD_MM = 2.0
-    const val OSCILLATION_CORRECTION = 1.0
-    const val COORDINATION_SCALE = 1.0
+    // Частота: высокий порог — считаем только крупные пики, не мелкую дрожь
+    const val AMPLITUDE_THRESHOLD_MM_FREQ = 3.0    // для частоты
+    // Координация: порог для детекции амплитуд (используется *1.5 внутри)
+    const val AMPLITUDE_THRESHOLD_MM_COORD = 1.5   // базовый порог, эффективный = 2.25 мм
+    const val AMPLITUDE_THRESHOLD_MM = AMPLITUDE_THRESHOLD_MM_COORD // базовый (совместимость)
+    // Коррекция частоты: учитываем почти целые волны
+    const val OSCILLATION_CORRECTION = 0.30
+    
+    // Масштаб координационного фактора
+    // АЛГОРИТМ v7: КФ = Сумма_амплитуд × (0.5 + хаотичность)
+    // - Большие хаотичные движения → высокий КФ (плохая координация)
+    // - Большие плавные движения → средний КФ
+    // - Малые движения → низкий КФ (хорошая координация)
+    const val COORDINATION_SCALE_TIME = 0.75
+    const val COORDINATION_SCALE_TARGET = 0.75
+    
+    // Для обратной совместимости (если где-то используется старое имя)
+    const val COORDINATION_SCALE = COORDINATION_SCALE_TIME
 }
 

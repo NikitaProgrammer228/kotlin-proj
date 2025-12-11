@@ -23,8 +23,10 @@ data class ProcessedSample(
     val ayMm: Double,
     val vxMm: Double,
     val vyMm: Double,
-    val sxMm: Double,
-    val syMm: Double,
+    val sxMm: Double,      // Позиция X (обрезанная для отображения)
+    val syMm: Double,      // Позиция Y (обрезанная для отображения)
+    val sxMmRaw: Double,   // Позиция X (сырая, для расчёта метрик)
+    val syMmRaw: Double,   // Позиция Y (сырая, для расчёта метрик)
     val hasArtifact: Boolean = false  // Флаг артефакта (до ограничения позиции)
 )
 

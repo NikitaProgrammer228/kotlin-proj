@@ -7,5 +7,35 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Balance Test Colors -->
+    <color name="primary_red">#FFE53935</color>
+    <color name="primary_green">#FF4CAF50</color>
+    <color name="primary_yellow">#FFFFEB3B</color>
+    <color name="graph_zone_red">#FFE37969</color>
+    <color name="graph_zone_yellow">#FFFCEA8B</color>
+    <color name="graph_zone_green">#FF8FDC47</color>
+    <color name="graph_line">#FF212121</color>
+    <color name="background_light">#FFF5F5F5</color>
+    <color name="text_primary">#FF212121</color>
+    <color name="text_secondary">#FF757575</color>
+    <color name="card_background">#FFFFFFFF</color>
+    <color name="button_save">#6DC188</color>
+    <color name="button_export">#FFE53935</color>
+    <color name="button_new_test">#FF424242</color>
+    <color name="card_border">#E9E9EF</color>
+    <color name="card_background_light">#F5F5F5</color>
+    <!-- Pain Level Gradient Colors -->
+    <color name="pain_gradient_green">#46CE39</color>
+    <color name="pain_gradient_yellow">#EED03B</color>
+    <color name="pain_gradient_red">#DC433C</color>
+    <color name="pain_scale_text">#979797</color>
+    <color name="sidebar_background">#F6F6FB</color>
+    
+    <!-- Sensor Selection Colors -->
+    <color name="selected_sensor_background">#F0F0F0</color>
+    <color name="unselected_sensor_background">#FFFFFF</color>
+    <color name="bluetooth_active">#3E7EE4</color>
+    <color name="bluetooth_inactive">#B7B7B7</color>
 </resources>
 

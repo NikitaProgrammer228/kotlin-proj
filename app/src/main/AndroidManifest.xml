@@ -37,6 +37,32 @@
             android:name=".ui.UserManagementActivity"
             android:exported="false" />
             
+        <activity
+            android:name=".ui.ComparisonActivity"
+            android:exported="false" />
+            
+        <activity
+            android:name=".ui.PktActivity"
+            android:exported="false" />
+            
+        <activity
+            android:name=".ui.BalanceTestActivity"
+            android:exported="false" />
+            
+        <activity
+            android:name=".ui.BalanceTestTargetActivity"
+            android:exported="false" />
+            
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+            
     </application>
 
 </manifest>

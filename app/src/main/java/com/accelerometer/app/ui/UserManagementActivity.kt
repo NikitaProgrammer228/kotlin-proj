@@ -34,9 +34,11 @@ class UserManagementActivity : AppCompatActivity() {
         
         database = AppDatabase.getDatabase(this)
         
-        adapter = UserAdapter { user ->
-            deleteUser(user)
-        }
+        adapter = UserAdapter(
+            onDeleteClick = { user -> deleteUser(user) },
+            onCompareClick = { user -> compareUserMeasurements(user) },
+            onPktClick = { user -> startPktProtocol(user) }
+        )
         
         binding.recyclerViewUsers.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewUsers.adapter = adapter
@@ -100,6 +102,18 @@ class UserManagementActivity : AppCompatActivity() {
             .show()
     }
     
+    private fun compareUserMeasurements(user: User) {
+        val intent = android.content.Intent(this, ComparisonActivity::class.java)
+        intent.putExtra("userId", user.id)
+        startActivity(intent)
+    }
+    
+    private fun startPktProtocol(user: User) {
+        val intent = android.content.Intent(this, PktActivity::class.java)
+        intent.putExtra("userId", user.id)
+        startActivity(intent)
+    }
+    
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
@@ -107,7 +121,9 @@ class UserManagementActivity : AppCompatActivity() {
 }
 
 class UserAdapter(
-    private val onDeleteClick: (User) -> Unit
+    private val onDeleteClick: (User) -> Unit,
+    private val onCompareClick: (User) -> Unit,
+    private val onPktClick: (User) -> Unit
 ) : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
     
     private var users = listOf<User>()
@@ -134,6 +150,12 @@ class UserAdapter(
             binding.tvUserEmail.text = user.email ?: ""
             binding.btnDelete.setOnClickListener {
                 onDeleteClick(user)
+            }
+            binding.btnCompare.setOnClickListener {
+                onCompareClick(user)
+            }
+            binding.btnPkt.setOnClickListener {
+                onPktClick(user)
             }
         }
     }

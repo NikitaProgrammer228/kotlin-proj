@@ -9,18 +9,18 @@ class MeasurementProcessor(
     )
 ) {
 
-    private var measurementStart: Double? = null
+    // Время начала ПОСЛЕ калибровки (не с первого сэмпла)
+    private var measurementStartAfterCalibration: Double? = null
 
     fun reset() {
-        measurementStart = null
+        measurementStartAfterCalibration = null
         motionProcessor.reset()
     }
+    
+    fun isCalibrated(): Boolean = motionProcessor.isCalibrated()
 
-    fun process(sample: SensorSample): ProcessedSample {
+    fun process(sample: SensorSample): ProcessedSample? {
         val timestamp = sample.timestampSec
-        if (measurementStart == null) {
-            measurementStart = timestamp
-        }
 
         // Передаём ускорение напрямую в g (SDK уже возвращает значения в g)
         val state = motionProcessor.processSample(
@@ -31,8 +31,23 @@ class MeasurementProcessor(
             angleYDeg = sample.angleYDeg,
             timestampSec = timestamp
         )
+        
+        // Если калибровка выключена — рисуем сразу; иначе ждём её завершения
+        if (MeasurementConfig.ENABLE_CALIBRATION) {
+        if (!motionProcessor.isCalibrated()) {
+            return null
+            }
+        } else {
+            // если калибровка отключена, но стабилизация (если задана) ещё идёт,
+            // то motionProcessor.isCalibrated() может быть false; в этом случае всё равно рисуем
+        }
 
-        val elapsed = timestamp - (measurementStart ?: timestamp)
+        // Запоминаем время первого сэмпла ПОСЛЕ калибровки
+        if (measurementStartAfterCalibration == null) {
+            measurementStartAfterCalibration = timestamp
+        }
+
+        val elapsed = timestamp - (measurementStartAfterCalibration ?: timestamp)
 
         return ProcessedSample(
             t = elapsed,
@@ -42,6 +57,8 @@ class MeasurementProcessor(
             vyMm = state.vyMm,
             sxMm = state.sxMm,
             syMm = state.syMm,
+            sxMmRaw = state.sxMmRaw,
+            syMmRaw = state.syMmRaw,
             hasArtifact = state.hasArtifact
         )
     }

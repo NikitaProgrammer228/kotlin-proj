@@ -21,7 +21,13 @@ public final class ItemUserBinding implements ViewBinding {
   private final MaterialCardView rootView;
 
   @NonNull
+  public final ImageButton btnCompare;
+
+  @NonNull
   public final ImageButton btnDelete;
+
+  @NonNull
+  public final ImageButton btnPkt;
 
   @NonNull
   public final TextView tvUserEmail;
@@ -29,10 +35,13 @@ public final class ItemUserBinding implements ViewBinding {
   @NonNull
   public final TextView tvUserName;
 
-  private ItemUserBinding(@NonNull MaterialCardView rootView, @NonNull ImageButton btnDelete,
-      @NonNull TextView tvUserEmail, @NonNull TextView tvUserName) {
+  private ItemUserBinding(@NonNull MaterialCardView rootView, @NonNull ImageButton btnCompare,
+      @NonNull ImageButton btnDelete, @NonNull ImageButton btnPkt, @NonNull TextView tvUserEmail,
+      @NonNull TextView tvUserName) {
     this.rootView = rootView;
+    this.btnCompare = btnCompare;
     this.btnDelete = btnDelete;
+    this.btnPkt = btnPkt;
     this.tvUserEmail = tvUserEmail;
     this.tvUserName = tvUserName;
   }
@@ -64,9 +73,21 @@ public final class ItemUserBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.btnCompare;
+      ImageButton btnCompare = ViewBindings.findChildViewById(rootView, id);
+      if (btnCompare == null) {
+        break missingId;
+      }
+
       id = R.id.btnDelete;
       ImageButton btnDelete = ViewBindings.findChildViewById(rootView, id);
       if (btnDelete == null) {
+        break missingId;
+      }
+
+      id = R.id.btnPkt;
+      ImageButton btnPkt = ViewBindings.findChildViewById(rootView, id);
+      if (btnPkt == null) {
         break missingId;
       }
 
@@ -82,7 +103,8 @@ public final class ItemUserBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ItemUserBinding((MaterialCardView) rootView, btnDelete, tvUserEmail, tvUserName);
+      return new ItemUserBinding((MaterialCardView) rootView, btnCompare, btnDelete, btnPkt,
+          tvUserEmail, tvUserName);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));
