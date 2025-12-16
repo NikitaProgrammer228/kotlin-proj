@@ -61,12 +61,17 @@ class BalanceTestActivity : AppCompatActivity() {
     private var isTestRunning: Boolean = false
     private var isTestPaused: Boolean = false  // Флаг паузы теста
     
-    // Для автостарта по порогу движения
-    private var baseAngleX: Double? = null
-    private var baseAngleY: Double? = null
+    // Для автостарта по порогу движения (используем ускорения, не углы)
+    private var baseAccX: Double? = null
+    private var baseAccY: Double? = null
     private var autostartSampleCount: Int = 0
     private val AUTOSTART_SAMPLES_FOR_BASE = 10  // Сколько сэмплов для определения базовой позиции
     private var isAutostartArmed: Boolean = false  // Флаг "взведённости" автостарта
+    // Интегрированная позиция для автостарта
+    private var autostartVelX: Double = 0.0
+    private var autostartVelY: Double = 0.0
+    private var autostartPosX: Double = 0.0
+    private var autostartPosY: Double = 0.0
     
     // Диалог подготовки к тесту
     private var preparationDialog: Dialog? = null
@@ -464,36 +469,45 @@ class BalanceTestActivity : AppCompatActivity() {
     
     /**
      * Проверка автостарта по порогу движения.
-     * Если автостарт включен, взведён и движение превышает порог - запускаем тест.
+     * Используем УСКОРЕНИЯ и двойную интеграцию (как MicroSwing).
      */
     private fun checkAutostartThreshold(sample: com.accelerometer.app.data.SensorSample) {
         // Пропускаем если автостарт выключен, не взведён или тест уже запущен
         if (!isAutostart || !isAutostartArmed || isTestRunning) return
         
-        // Первые N сэмплов используем для определения базовой позиции
+        val dt = 1.0 / MeasurementConfig.EXPECTED_SAMPLE_RATE_HZ
+        val G_TO_MM_S2 = 9806.65  // g → мм/с²
+        
+        // Первые N сэмплов используем для определения базового ускорения (bias)
         if (autostartSampleCount < AUTOSTART_SAMPLES_FOR_BASE) {
-            if (baseAngleX == null) {
-                baseAngleX = sample.angleXDeg
-                baseAngleY = sample.angleYDeg
+            if (baseAccX == null) {
+                baseAccX = sample.accXg
+                baseAccY = sample.accYg
             } else {
-                // Усредняем базовую позицию
-                baseAngleX = baseAngleX!! * 0.9 + sample.angleXDeg * 0.1
-                baseAngleY = baseAngleY!! * 0.9 + sample.angleYDeg * 0.1
+                // Усредняем базовое ускорение
+                baseAccX = baseAccX!! * 0.9 + sample.accXg * 0.1
+                baseAccY = baseAccY!! * 0.9 + sample.accYg * 0.1
             }
             autostartSampleCount++
             return
         }
         
-        // Проверяем отклонение от базовой позиции
-        val deltaX = sample.angleXDeg - (baseAngleX ?: 0.0)
-        val deltaY = sample.angleYDeg - (baseAngleY ?: 0.0)
+        // Вычитаем bias
+        val accX = (sample.accXg - (baseAccX ?: 0.0)) * MeasurementConfig.AXIS_INVERT_X
+        val accY = (sample.accYg - (baseAccY ?: 0.0)) * MeasurementConfig.AXIS_INVERT_Y
         
-        // Конвертируем углы в мм (как в MeasurementProcessor)
-        val posXMm = deltaX * MeasurementConfig.ANGLE_TO_MM_SCALE_X
-        val posYMm = deltaY * MeasurementConfig.ANGLE_TO_MM_SCALE_Y
+        // Преобразуем в мм/с²
+        val accXMm = accX * G_TO_MM_S2
+        val accYMm = accY * G_TO_MM_S2
+        
+        // Интегрируем: ускорение → скорость → позиция
+        autostartVelX = autostartVelX * 0.98 + accXMm * dt  // с затуханием
+        autostartVelY = autostartVelY * 0.98 + accYMm * dt
+        autostartPosX += autostartVelX * dt
+        autostartPosY += autostartVelY * dt
         
         // Проверяем превышение порога
-        val amplitude = kotlin.math.sqrt(posXMm * posXMm + posYMm * posYMm)
+        val amplitude = kotlin.math.sqrt(autostartPosX * autostartPosX + autostartPosY * autostartPosY)
         if (amplitude > MeasurementConfig.AUTOSTART_THRESHOLD_MM) {
             // Порог превышен - снимаем "взведённость" и запускаем тест
             isAutostartArmed = false
@@ -516,18 +530,26 @@ class BalanceTestActivity : AppCompatActivity() {
      * Сброс базовой позиции для автостарта (без изменения флага взведённости)
      */
     private fun resetAutostartBase() {
-        baseAngleX = null
-        baseAngleY = null
+        baseAccX = null
+        baseAccY = null
         autostartSampleCount = 0
+        autostartVelX = 0.0
+        autostartVelY = 0.0
+        autostartPosX = 0.0
+        autostartPosY = 0.0
     }
     
     /**
      * Полный сброс состояния автостарта (при отключении сенсора)
      */
     private fun resetAutostartState() {
-        baseAngleX = null
-        baseAngleY = null
+        baseAccX = null
+        baseAccY = null
         autostartSampleCount = 0
+        autostartVelX = 0.0
+        autostartVelY = 0.0
+        autostartPosX = 0.0
+        autostartPosY = 0.0
         isAutostartArmed = false
     }
 
