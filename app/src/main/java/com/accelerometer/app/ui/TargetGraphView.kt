@@ -115,9 +115,6 @@ class TargetGraphView @JvmOverloads constructor(
         
         // Вычисляем scaleFactor так, чтобы redRadiusMm * scaleFactor = redRadiusPixels
         val scaleFactor = (redRadiusPixels / redRadiusMm) * MeasurementConfig.TARGET_GRAPH_SCALE
-        
-        // Радиус области графика для осей и меток (чуть больше красного круга)
-        val graphRadius = redRadiusPixels * 1.0f
 
         // Рисуем концентрические кольца (от внешнего к внутреннему) согласно MicroSwing
         // Красная зона (внешняя) - от 20мм до 40мм (большие отклонения)
@@ -127,23 +124,12 @@ class TargetGraphView @JvmOverloads constructor(
         // Зеленая зона (внутренняя) - от 0мм до 10мм (хорошая стабильность)
         canvas.drawCircle(centerX, centerY, greenRadiusMm * scaleFactor, zoneGreenPaint)
 
-        // Рисуем оси X и Y (тонкие линии через центр)
+        // Рисуем оси X и Y (тонкие линии через центр) до краёв контейнера,
+        // чтобы "крест" доходил до границ экрана/карточки как в макете.
         // Ось X (горизонтальная)
-        canvas.drawLine(
-            centerX - graphRadius,
-            centerY,
-            centerX + graphRadius,
-            centerY,
-            axisPaint
-        )
+        canvas.drawLine(0f, centerY, width, centerY, axisPaint)
         // Ось Y (вертикальная)
-        canvas.drawLine(
-            centerX,
-            centerY - graphRadius,
-            centerX,
-            centerY + graphRadius,
-            axisPaint
-        )
+        canvas.drawLine(centerX, 0f, centerX, height, axisPaint)
 
         // Рисуем траекторию
         // Масштабируем данные так, чтобы они соответствовали размеру кругов

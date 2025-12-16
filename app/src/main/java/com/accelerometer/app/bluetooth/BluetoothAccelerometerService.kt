@@ -229,6 +229,17 @@ class BluetoothAccelerometerService(
         val angleX = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleX)) ?: return
         val angleY = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleY)) ?: return
         val angleZ = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleZ)) ?: return
+        
+        // Попробуем получить данные гироскопа (угловая скорость)
+        val gyroX = parseAccelerationG(bwt901ble.getDeviceData(WitSensorKey.AsX))
+        val gyroY = parseAccelerationG(bwt901ble.getDeviceData(WitSensorKey.AsY))
+        val gyroZ = parseAccelerationG(bwt901ble.getDeviceData(WitSensorKey.AsZ))
+        
+        // Логируем ВСЕ данные для анализа
+        Log.d(TAG, "SENSOR: acc=(${String.format("%.4f", accXg)}, ${String.format("%.4f", accYg)}, ${String.format("%.4f", accZg)}) " +
+                   "angle=(${String.format("%.2f", angleX)}, ${String.format("%.2f", angleY)}, ${String.format("%.2f", angleZ)}) " +
+                   "gyro=(${gyroX?.let { String.format("%.2f", it) } ?: "N/A"}, ${gyroY?.let { String.format("%.2f", it) } ?: "N/A"}, ${gyroZ?.let { String.format("%.2f", it) } ?: "N/A"})")
+        
         val timestampSec = SystemClock.elapsedRealtimeNanos() / 1_000_000_000.0
         val sample = SensorSample(
             timestampSec = timestampSec,
@@ -237,7 +248,10 @@ class BluetoothAccelerometerService(
             accZg = accZg,
             angleXDeg = angleX,
             angleYDeg = angleY,
-            angleZDeg = angleZ
+            angleZDeg = angleZ,
+            gyroXDegS = gyroX ?: 0.0,
+            gyroYDegS = gyroY ?: 0.0,
+            gyroZDegS = gyroZ ?: 0.0
         )
         if (!_sensorSamples.tryEmit(sample)) {
             Log.w(TAG, "Dropped sensor sample due to backpressure")

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Accelerometer App</string>
+    <string name="app_name">SIMPROVE CHECK</string>
     <string name="connect">Подключиться</string>
     <string name="disconnect">Отключиться</string>
     <string name="scanning">Поиск устройств...</string>

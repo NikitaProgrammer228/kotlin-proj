@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_light"
+    android:background="@color/white"
     tools:context=".ui.BalanceTestTargetActivity">
 
     <!-- Левая боковая панель -->
@@ -409,13 +409,14 @@
         <!-- Элементы управления графиком -->
         <LinearLayout
             android:id="@+id/graphControls"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/targetContainer"
@@ -426,32 +427,44 @@
                 android:layout_height="wrap_content"
                 android:text="Масштаб графика:"
                 android:textSize="14sp"
+                android:textColor="#000000"
                 android:layout_marginEnd="8dp" />
 
             <Spinner
                 android:id="@+id/scaleSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
+                android:minWidth="70dp"
                 android:background="@drawable/spinner_background_with_arrow"
                 android:paddingStart="12dp"
-                android:paddingEnd="32dp"
-                android:layout_marginEnd="16dp" />
+                android:paddingEnd="32dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Вид:"
                 android:textSize="14sp"
+                android:textColor="#000000"
                 android:layout_marginEnd="8dp" />
 
             <Spinner
                 android:id="@+id/viewSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
+                android:minWidth="100dp"
                 android:background="@drawable/spinner_background_with_arrow"
                 android:paddingStart="12dp"
-                android:paddingEnd="32dp"
-                android:layout_marginEnd="16dp" />
+                android:paddingEnd="32dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
 
             <ImageView
                 android:id="@+id/fullscreenButton"
@@ -563,14 +576,19 @@
                     app:cardElevation="0dp"
                     app:strokeWidth="1dp"
                     app:strokeColor="@color/card_border"
-                    app:cardBackgroundColor="@color/card_background_light"
+                    app:cardBackgroundColor="@color/white"
                     android:visibility="visible">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:paddingTop="16dp"
+                        android:paddingBottom="16dp"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -600,7 +618,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                            android:gravity="center_vertical"
+                            android:clipChildren="false"
+                            android:clipToPadding="false">
 
                             <TextView
                                 android:id="@+id/testDurationDisplay"
@@ -623,7 +643,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical"
-                                android:gravity="center">
+                                android:gravity="center"
+                                android:clipChildren="false"
+                                android:clipToPadding="false">
 
                                 <com.google.android.material.button.MaterialButton
                                     android:id="@+id/startButton"
@@ -679,7 +701,7 @@
                     app:cardElevation="0dp"
                     app:strokeWidth="1dp"
                     app:strokeColor="@color/card_border"
-                    app:cardBackgroundColor="@color/card_background_light"
+                    app:cardBackgroundColor="@color/white"
                     android:visibility="visible">
 
                     <LinearLayout
@@ -837,7 +859,7 @@
                     app:cardElevation="0dp"
                     app:strokeWidth="1dp"
                     app:strokeColor="@color/card_border"
-                    app:cardBackgroundColor="@color/card_background_light"
+                    app:cardBackgroundColor="@color/white"
                     android:visibility="gone">
 
                     <LinearLayout

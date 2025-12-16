@@ -4,7 +4,7 @@
             "outputFile": "com.accelerometer.app-mergeDebugResources-39:/values-en-rXC/values-en-rXC.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\6291c780cc2700d0e649ee35acd3035f\\transformed\\core-1.13.0\\res\\values-en-rXC\\values-en-rXC.xml",
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\a66ceb22de1f0823001f4eeb2f4e1f01\\transformed\\core-1.13.0\\res\\values-en-rXC\\values-en-rXC.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\ec4b7e3fd7557f887cf735cbb37411f2\\transformed\\appcompat-1.6.1\\res\\values-en-rXC\\values-en-rXC.xml",
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\70dae9bf53c6510674b46de0afb13a64\\transformed\\appcompat-1.6.1\\res\\values-en-rXC\\values-en-rXC.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",

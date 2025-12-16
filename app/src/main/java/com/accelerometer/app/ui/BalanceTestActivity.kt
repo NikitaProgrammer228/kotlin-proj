@@ -8,7 +8,9 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
+import android.view.Gravity
 import android.view.Window
+import android.view.WindowManager
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
 import android.widget.ProgressBar
@@ -55,8 +57,16 @@ class BalanceTestActivity : AppCompatActivity() {
     private var selectedPainLevel: Int = 9
     private var selectedTestDuration: Int = 10
     private var selectedDifficulty: String = "Простой"
-    private var isAutostart: Boolean = true
+    private var isAutostart: Boolean = false  // По умолчанию выключен
     private var isTestRunning: Boolean = false
+    private var isTestPaused: Boolean = false  // Флаг паузы теста
+    
+    // Для автостарта по порогу движения
+    private var baseAngleX: Double? = null
+    private var baseAngleY: Double? = null
+    private var autostartSampleCount: Int = 0
+    private val AUTOSTART_SAMPLES_FOR_BASE = 10  // Сколько сэмплов для определения базовой позиции
+    private var isAutostartArmed: Boolean = false  // Флаг "взведённости" автостарта
     
     // Диалог подготовки к тесту
     private var preparationDialog: Dialog? = null
@@ -235,6 +245,13 @@ class BalanceTestActivity : AppCompatActivity() {
         binding.autostartSwitch.isChecked = isAutostart
         binding.autostartSwitch.setOnCheckedChangeListener { _, isChecked ->
             isAutostart = isChecked
+            if (isChecked) {
+                // При включении автостарта - взводим его (если сенсор уже подключен)
+                armAutostart()
+            } else {
+                // При выключении - разряжаем
+                isAutostartArmed = false
+            }
         }
     }
 
@@ -256,8 +273,12 @@ class BalanceTestActivity : AppCompatActivity() {
         binding.saveToDatabaseButton.visibility = android.view.View.GONE
         binding.exportReportButton.visibility = android.view.View.GONE
         binding.newTestButton.visibility = android.view.View.GONE
-        binding.startButton.isEnabled = false
-        binding.startButton.text = "ИДЁТ ТЕСТ..."
+        // Кнопка будет обновлена в renderMeasurementState
+        binding.startButton.isEnabled = true
+        binding.startButton.text = "ПАУЗА"
+        binding.startButton.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            android.graphics.Color.parseColor("#6DC188")
+        )
     }
 
     private fun showTestResultsUI() {
@@ -270,6 +291,9 @@ class BalanceTestActivity : AppCompatActivity() {
         binding.newTestButton.visibility = android.view.View.VISIBLE
         binding.startButton.isEnabled = true
         binding.startButton.text = "СТАРТ"
+        binding.startButton.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            android.graphics.Color.parseColor("#DC433C")
+        )
         
         // Обновляем уровень болевого синдрома и сложности в карточке результатов
         binding.painLevelTextView.text = selectedPainLevel.toString()
@@ -277,9 +301,15 @@ class BalanceTestActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-        // Кнопка СТАРТ
+        // Кнопка СТАРТ / ПАУЗА
         binding.startButton.setOnClickListener {
-            startTest()
+            if (isTestRunning && !isTestPaused) {
+                // Тест идёт — ставим на паузу
+                pauseTest()
+            } else {
+                // Тест не идёт или на паузе — начинаем новый тест
+                startTest()
+            }
         }
 
         binding.saveToDatabaseButton.setOnClickListener {
@@ -317,8 +347,29 @@ class BalanceTestActivity : AppCompatActivity() {
             return
         }
         
+        // Если был на паузе — сбрасываем флаг и очищаем графики
+        if (isTestPaused) {
+            isTestPaused = false
+            clearGraphs()
+        }
+        
         // Для базового баланс-теста запускаем сразу, без окна подготовки (диалог нужен только для PKT)
         actuallyStartTest()
+    }
+    
+    private fun pauseTest() {
+        isTestPaused = true
+        isTestRunning = false
+        viewModel.stopMeasurement()
+        
+        // Обновляем UI кнопки — показываем СТАРТ (красная)
+        binding.startButton.text = "СТАРТ"
+        binding.startButton.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            android.graphics.Color.parseColor("#DC433C")
+        )
+        binding.startButton.isEnabled = true
+        
+        // Графики остаются на экране (не очищаем)
     }
     
     private fun showPreparationDialog() {
@@ -390,7 +441,11 @@ class BalanceTestActivity : AppCompatActivity() {
                 }
                 launch {
                     bluetoothService.sensorSamples.collect { sample ->
+                        // Передаём данные в ViewModel (обрабатываются только когда тест запущен)
                         viewModel.onSensorSample(sample)
+                        
+                        // Проверка автостарта по порогу движения
+                        checkAutostartThreshold(sample)
                     }
                 }
                 launch {
@@ -406,6 +461,75 @@ class BalanceTestActivity : AppCompatActivity() {
             }
         }
     }
+    
+    /**
+     * Проверка автостарта по порогу движения.
+     * Если автостарт включен, взведён и движение превышает порог - запускаем тест.
+     */
+    private fun checkAutostartThreshold(sample: com.accelerometer.app.data.SensorSample) {
+        // Пропускаем если автостарт выключен, не взведён или тест уже запущен
+        if (!isAutostart || !isAutostartArmed || isTestRunning) return
+        
+        // Первые N сэмплов используем для определения базовой позиции
+        if (autostartSampleCount < AUTOSTART_SAMPLES_FOR_BASE) {
+            if (baseAngleX == null) {
+                baseAngleX = sample.angleXDeg
+                baseAngleY = sample.angleYDeg
+            } else {
+                // Усредняем базовую позицию
+                baseAngleX = baseAngleX!! * 0.9 + sample.angleXDeg * 0.1
+                baseAngleY = baseAngleY!! * 0.9 + sample.angleYDeg * 0.1
+            }
+            autostartSampleCount++
+            return
+        }
+        
+        // Проверяем отклонение от базовой позиции
+        val deltaX = sample.angleXDeg - (baseAngleX ?: 0.0)
+        val deltaY = sample.angleYDeg - (baseAngleY ?: 0.0)
+        
+        // Конвертируем углы в мм (как в MeasurementProcessor)
+        val posXMm = deltaX * MeasurementConfig.ANGLE_TO_MM_SCALE_X
+        val posYMm = deltaY * MeasurementConfig.ANGLE_TO_MM_SCALE_Y
+        
+        // Проверяем превышение порога
+        val amplitude = kotlin.math.sqrt(posXMm * posXMm + posYMm * posYMm)
+        if (amplitude > MeasurementConfig.AUTOSTART_THRESHOLD_MM) {
+            // Порог превышен - снимаем "взведённость" и запускаем тест
+            isAutostartArmed = false
+            startTest()
+        }
+    }
+    
+    /**
+     * "Взведение" автостарта - подготовка к автоматическому запуску теста.
+     * Вызывается при подключении сенсора и при нажатии "Новый тест".
+     */
+    private fun armAutostart() {
+        if (isAutostart) {
+            isAutostartArmed = true
+            resetAutostartBase()
+        }
+    }
+    
+    /**
+     * Сброс базовой позиции для автостарта (без изменения флага взведённости)
+     */
+    private fun resetAutostartBase() {
+        baseAngleX = null
+        baseAngleY = null
+        autostartSampleCount = 0
+    }
+    
+    /**
+     * Полный сброс состояния автостарта (при отключении сенсора)
+     */
+    private fun resetAutostartState() {
+        baseAngleX = null
+        baseAngleY = null
+        autostartSampleCount = 0
+        isAutostartArmed = false
+    }
 
     private fun updateBatteryUI(level: Int) {
         binding.batteryProgress.progress = level
@@ -416,16 +540,16 @@ class BalanceTestActivity : AppCompatActivity() {
         when (state) {
             BluetoothAccelerometerService.ConnectionState.CONNECTED -> {
                 updateSensorConnectionUI(true, getString(R.string.device_connected))
-                // Не запускаем автоматически — ждём нажатия кнопки СТАРТ
-                // Но если включён автостарт, запускаем
-                if (isAutostart && !isTestRunning) {
-                    startTest()
-                }
+                // "Взводим" автостарт при подключении сенсора
+                // Тест НЕ запускается сразу - только по кнопке "Старт" или по порогу движения
+                armAutostart()
             }
             BluetoothAccelerometerService.ConnectionState.DISCONNECTED -> {
                 updateSensorConnectionUI(false, getString(R.string.device_disconnected))
                 viewModel.stopMeasurement()
                 isTestRunning = false
+                isTestPaused = false
+                resetAutostartState()
                 clearGraphs()
             }
             BluetoothAccelerometerService.ConnectionState.CONNECTING -> {
@@ -472,6 +596,9 @@ class BalanceTestActivity : AppCompatActivity() {
         when (state.status) {
             MeasurementStatus.FINISHED -> {
                 isTestRunning = false
+                isTestPaused = false
+                // Автостарт уже "разряжен" (isAutostartArmed = false) после запуска теста,
+                // поэтому повторно не сработает. Для нового теста нужно нажать "Новый тест".
                 showTestResultsUI()
                 binding.saveToDatabaseButton.isEnabled = true
                 binding.exportReportButton.isEnabled = true
@@ -481,13 +608,22 @@ class BalanceTestActivity : AppCompatActivity() {
                 showTestRunningUI()
                 binding.testDurationDisplay.text = selectedTestDuration.toString()
                 binding.startButton.text = "КАЛИБРОВКА..."
+                binding.startButton.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                    android.graphics.Color.parseColor("#FFA500")  // Оранжевый для калибровки
+                )
+                binding.startButton.isEnabled = false
             }
             MeasurementStatus.RUNNING -> {
                 showTestRunningUI()
                 // Обновляем отображение оставшегося времени
                 val remainingSec = (selectedTestDuration - state.elapsedSec).toInt().coerceAtLeast(0)
                 binding.testDurationDisplay.text = remainingSec.toString()
-                binding.startButton.text = "ИДЁТ ТЕСТ..."
+                // Кнопка ПАУЗА (зелёная)
+                binding.startButton.text = "ПАУЗА"
+                binding.startButton.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                    android.graphics.Color.parseColor("#6DC188")
+                )
+                binding.startButton.isEnabled = true
             }
             else -> {
                 // IDLE или CALIBRATING — не меняем UI
@@ -591,6 +727,8 @@ class BalanceTestActivity : AppCompatActivity() {
         showTestSetupUI()
         // Сбрасываем отображение времени
         binding.testDurationDisplay.text = selectedTestDuration.toString()
+        // "Взводим" автостарт для нового теста
+        armAutostart()
     }
 
     override fun onResume() {
@@ -604,9 +742,10 @@ class BalanceTestActivity : AppCompatActivity() {
             setContentView(R.layout.dialog_sensor_selection)
             window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             window?.setLayout(
-                (resources.displayMetrics.widthPixels * 0.9).toInt(),
-                (resources.displayMetrics.heightPixels * 0.6).toInt()
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT
             )
+            window?.setGravity(Gravity.CENTER)
             setCancelable(true)
         }
 

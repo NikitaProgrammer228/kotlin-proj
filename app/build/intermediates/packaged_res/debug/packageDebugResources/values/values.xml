@@ -33,7 +33,7 @@
     <color name="unselected_sensor_background">#FFFFFF</color>
     <color name="white">#FFFFFFFF</color>
     <string name="add_user">Добавить пользователя</string>
-    <string name="app_name">Accelerometer App</string>
+    <string name="app_name">SIMPROVE CHECK</string>
     <string name="balance_test">Баланс-тест</string>
     <string name="battery_level">Уровень заряда аккумулятора</string>
     <string name="connect">Подключиться</string>

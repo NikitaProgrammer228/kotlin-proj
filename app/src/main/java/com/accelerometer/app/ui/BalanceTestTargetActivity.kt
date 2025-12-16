@@ -8,7 +8,9 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
+import android.view.Gravity
 import android.view.Window
+import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -28,6 +30,7 @@ import com.accelerometer.app.data.MeasurementStatus
 import com.accelerometer.app.databinding.ActivityBalanceTestTargetBinding
 import com.accelerometer.app.database.AppDatabase
 import com.accelerometer.app.export.PdfExportService
+import com.accelerometer.app.measurement.MeasurementConfig
 import com.accelerometer.app.service.MeasurementRepository
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.launch
@@ -53,8 +56,16 @@ class BalanceTestTargetActivity : AppCompatActivity() {
     private var selectedPainLevel: Int = 9
     private var selectedTestDuration: Int = 10
     private var selectedDifficulty: String = "Простой"
-    private var isAutostart: Boolean = true
+    private var isAutostart: Boolean = false  // По умолчанию выключен
     private var isTestRunning: Boolean = false
+    private var isTestPaused: Boolean = false  // Флаг паузы теста
+    
+    // Для автостарта по порогу движения
+    private var baseAngleX: Double? = null
+    private var baseAngleY: Double? = null
+    private var autostartSampleCount: Int = 0
+    private val AUTOSTART_SAMPLES_FOR_BASE = 10  // Сколько сэмплов для определения базовой позиции
+    private var isAutostartArmed: Boolean = false  // Флаг "взведённости" автостарта
     
     // Диалог подготовки к тесту
     private var preparationDialog: Dialog? = null
@@ -228,6 +239,13 @@ class BalanceTestTargetActivity : AppCompatActivity() {
         binding.autostartSwitch.isChecked = isAutostart
         binding.autostartSwitch.setOnCheckedChangeListener { _, isChecked ->
             isAutostart = isChecked
+            if (isChecked) {
+                // При включении автостарта - взводим его (если сенсор уже подключен)
+                armAutostart()
+            } else {
+                // При выключении - разряжаем
+                isAutostartArmed = false
+            }
         }
     }
 
@@ -249,14 +267,22 @@ class BalanceTestTargetActivity : AppCompatActivity() {
         binding.saveToDatabaseButton.visibility = android.view.View.GONE
         binding.exportReportButton.visibility = android.view.View.GONE
         binding.newTestButton.visibility = android.view.View.GONE
-        binding.startButton.isEnabled = false
-        binding.startButton.text = "ИДЁТ ТЕСТ..."
+        // Кнопка будет обновлена в renderMeasurementState
+        binding.startButton.isEnabled = true
+        binding.startButton.text = "ПАУЗА"
+        binding.startButton.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            android.graphics.Color.parseColor("#6DC188")
+        )
     }
 
     private fun showTestResultsUI() {
         binding.testSetupCard.visibility = android.view.View.GONE
         binding.testSettingsCard.visibility = android.view.View.GONE
         binding.testResultsCard.visibility = android.view.View.VISIBLE
+        binding.startButton.text = "СТАРТ"
+        binding.startButton.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            android.graphics.Color.parseColor("#DC433C")
+        )
         binding.painLevelResultCard.visibility = android.view.View.VISIBLE
         binding.saveToDatabaseButton.visibility = android.view.View.VISIBLE
         binding.exportReportButton.visibility = android.view.View.VISIBLE
@@ -269,8 +295,15 @@ class BalanceTestTargetActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
+        // Кнопка СТАРТ / ПАУЗА
         binding.startButton.setOnClickListener {
-            startTest()
+            if (isTestRunning && !isTestPaused) {
+                // Тест идёт — ставим на паузу
+                pauseTest()
+            } else {
+                // Тест не идёт или на паузе — начинаем новый тест
+                startTest()
+            }
         }
 
         binding.saveToDatabaseButton.setOnClickListener {
@@ -307,8 +340,29 @@ class BalanceTestTargetActivity : AppCompatActivity() {
             return
         }
         
+        // Если был на паузе — сбрасываем флаг и очищаем график
+        if (isTestPaused) {
+            isTestPaused = false
+            clearGraph()
+        }
+        
         // Для базового баланс-теста запускаем сразу, без окна подготовки (диалог нужен только для PKT)
         actuallyStartTest()
+    }
+    
+    private fun pauseTest() {
+        isTestPaused = true
+        isTestRunning = false
+        viewModel.stopMeasurement()
+        
+        // Обновляем UI кнопки — показываем СТАРТ (красная)
+        binding.startButton.text = "СТАРТ"
+        binding.startButton.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            android.graphics.Color.parseColor("#DC433C")
+        )
+        binding.startButton.isEnabled = true
+        
+        // График остаётся на экране (не очищаем)
     }
     
     private fun showPreparationDialog() {
@@ -370,7 +424,11 @@ class BalanceTestTargetActivity : AppCompatActivity() {
                 }
                 launch {
                     bluetoothService.sensorSamples.collect { sample ->
+                        // Передаём данные в ViewModel (обрабатываются только когда тест запущен)
                         viewModel.onSensorSample(sample)
+                        
+                        // Проверка автостарта по порогу движения
+                        checkAutostartThreshold(sample)
                     }
                 }
                 launch {
@@ -385,6 +443,75 @@ class BalanceTestTargetActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+    
+    /**
+     * Проверка автостарта по порогу движения.
+     * Если автостарт включен, взведён и движение превышает порог - запускаем тест.
+     */
+    private fun checkAutostartThreshold(sample: com.accelerometer.app.data.SensorSample) {
+        // Пропускаем если автостарт выключен, не взведён или тест уже запущен
+        if (!isAutostart || !isAutostartArmed || isTestRunning) return
+        
+        // Первые N сэмплов используем для определения базовой позиции
+        if (autostartSampleCount < AUTOSTART_SAMPLES_FOR_BASE) {
+            if (baseAngleX == null) {
+                baseAngleX = sample.angleXDeg
+                baseAngleY = sample.angleYDeg
+            } else {
+                // Усредняем базовую позицию
+                baseAngleX = baseAngleX!! * 0.9 + sample.angleXDeg * 0.1
+                baseAngleY = baseAngleY!! * 0.9 + sample.angleYDeg * 0.1
+            }
+            autostartSampleCount++
+            return
+        }
+        
+        // Проверяем отклонение от базовой позиции
+        val deltaX = sample.angleXDeg - (baseAngleX ?: 0.0)
+        val deltaY = sample.angleYDeg - (baseAngleY ?: 0.0)
+        
+        // Конвертируем углы в мм (как в MeasurementProcessor)
+        val posXMm = deltaX * MeasurementConfig.ANGLE_TO_MM_SCALE_X
+        val posYMm = deltaY * MeasurementConfig.ANGLE_TO_MM_SCALE_Y
+        
+        // Проверяем превышение порога
+        val amplitude = kotlin.math.sqrt(posXMm * posXMm + posYMm * posYMm)
+        if (amplitude > MeasurementConfig.AUTOSTART_THRESHOLD_MM) {
+            // Порог превышен - снимаем "взведённость" и запускаем тест
+            isAutostartArmed = false
+            startTest()
+        }
+    }
+    
+    /**
+     * "Взведение" автостарта - подготовка к автоматическому запуску теста.
+     * Вызывается при подключении сенсора и при нажатии "Новый тест".
+     */
+    private fun armAutostart() {
+        if (isAutostart) {
+            isAutostartArmed = true
+            resetAutostartBase()
+        }
+    }
+    
+    /**
+     * Сброс базовой позиции для автостарта (без изменения флага взведённости)
+     */
+    private fun resetAutostartBase() {
+        baseAngleX = null
+        baseAngleY = null
+        autostartSampleCount = 0
+    }
+    
+    /**
+     * Полный сброс состояния автостарта (при отключении сенсора)
+     */
+    private fun resetAutostartState() {
+        baseAngleX = null
+        baseAngleY = null
+        autostartSampleCount = 0
+        isAutostartArmed = false
     }
 
     private fun updateBatteryUI(level: Int) {
@@ -413,14 +540,16 @@ class BalanceTestTargetActivity : AppCompatActivity() {
         when (state) {
             BluetoothAccelerometerService.ConnectionState.CONNECTED -> {
                 updateSensorConnectionUI(true, getString(R.string.device_connected))
-                if (isAutostart && !isTestRunning) {
-                    startTest()
-                }
+                // "Взводим" автостарт при подключении сенсора
+                // Тест НЕ запускается сразу - только по кнопке "Старт" или по порогу движения
+                armAutostart()
             }
             BluetoothAccelerometerService.ConnectionState.DISCONNECTED -> {
                 updateSensorConnectionUI(false, getString(R.string.device_disconnected))
                 viewModel.stopMeasurement()
                 isTestRunning = false
+                isTestPaused = false
+                resetAutostartState()
                 clearGraph()
             }
             BluetoothAccelerometerService.ConnectionState.CONNECTING -> {
@@ -458,6 +587,9 @@ class BalanceTestTargetActivity : AppCompatActivity() {
         when (state.status) {
             MeasurementStatus.FINISHED -> {
                 isTestRunning = false
+                isTestPaused = false
+                // Автостарт уже "разряжен" (isAutostartArmed = false) после запуска теста,
+                // поэтому повторно не сработает. Для нового теста нужно нажать "Новый тест".
                 showTestResultsUI()
                 binding.saveToDatabaseButton.isEnabled = true
                 binding.exportReportButton.isEnabled = true
@@ -467,12 +599,21 @@ class BalanceTestTargetActivity : AppCompatActivity() {
                 showTestRunningUI()
                 binding.testDurationDisplay.text = selectedTestDuration.toString()
                 binding.startButton.text = "КАЛИБРОВКА..."
+                binding.startButton.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                    android.graphics.Color.parseColor("#FFA500")  // Оранжевый для калибровки
+                )
+                binding.startButton.isEnabled = false
             }
             MeasurementStatus.RUNNING -> {
                 showTestRunningUI()
                 val remainingSec = (selectedTestDuration - state.elapsedSec).toInt().coerceAtLeast(0)
                 binding.testDurationDisplay.text = remainingSec.toString()
-                binding.startButton.text = "ИДЁТ ТЕСТ..."
+                // Кнопка ПАУЗА (зелёная)
+                binding.startButton.text = "ПАУЗА"
+                binding.startButton.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                    android.graphics.Color.parseColor("#6DC188")
+                )
+                binding.startButton.isEnabled = true
             }
             else -> {}
         }
@@ -483,91 +624,62 @@ class BalanceTestTargetActivity : AppCompatActivity() {
     }
 
     /**
-     * Считаем проценты по квадрантам и обновляем подписи.
-     * Основание — длина пройденного пути (сегменты), чтобы ближе совпасть
-     * с немецким ПО. Если движения нет, падаем обратно на подсчёт по точкам.
-     * Знаки — как на графике: X инвертируем, Y оставляем вверх.
+     * Расчёт процентов квадрантов по ВРЕМЕНИ (количеству кадров) согласно ТЗ.
+     * Считаем сколько кадров (= времени при 50 Гц) траектория была в каждом квадранте.
+     * Сумма всех процентов = 100%.
+     * Знаки — как на графике: X и Y инвертируем (centerX - sxMm, centerY - syMm).
      */
     private fun updateCornerPercentsFromSamples(samples: List<com.accelerometer.app.data.ProcessedSample>) {
-        if (samples.size < 2) {
+        if (samples.isEmpty()) {
             setDefaultCornerPercents()
             return
         }
 
-        var topLeftLen = 0.0
-        var topRightLen = 0.0
-        var bottomLeftLen = 0.0
-        var bottomRightLen = 0.0
+        // Считаем количество кадров в каждом квадранте
+        // Экранные координаты: screenX = centerX - sxMm, screenY = centerY - syMm
+        // Поэтому: screenX < center когда sxMm > 0, screenY < center когда syMm > 0
+        var topLeft = 0     // верх-лево  (screenX < center, screenY < center) = (sxMm > 0, syMm > 0)
+        var topRight = 0    // верх-право (screenX >= center, screenY < center) = (sxMm <= 0, syMm > 0)
+        var bottomLeft = 0  // низ-лево   (screenX < center, screenY >= center) = (sxMm > 0, syMm <= 0)
+        var bottomRight = 0 // низ-право  (screenX >= center, screenY >= center) = (sxMm <= 0, syMm <= 0)
 
-        // Интегрируем длину пути по сегментам, относя сегмент к квадранту конечной точки
-        for (i in 1 until samples.size) {
-            val prev = samples[i - 1]
-            val curr = samples[i]
-
-            val prevX = -prev.sxMm
-            val prevY = prev.syMm
-            val currX = -curr.sxMm
-            val currY = curr.syMm
-
-            val segLen = hypot(currX - prevX, currY - prevY)
-            if (segLen == 0.0) continue
+        samples.forEach { s ->
+            // Используем знаки данных напрямую (без дополнительной инверсии),
+            // так как экранная система уже инвертирует их при отрисовке
+            val x = s.sxMm
+            val y = s.syMm
 
             when {
-                currY >= 0 && currX < 0 -> topLeftLen += segLen
-                currY >= 0 && currX >= 0 -> topRightLen += segLen
-                currY < 0 && currX < 0 -> bottomLeftLen += segLen
-                else -> bottomRightLen += segLen
+                y > 0 && x > 0 -> topLeft++
+                y > 0 && x <= 0 -> topRight++
+                y <= 0 && x > 0 -> bottomLeft++
+                y <= 0 && x <= 0 -> bottomRight++
             }
         }
 
-        var totalLen = topLeftLen + topRightLen + bottomLeftLen + bottomRightLen
+        val total = samples.size
+        
+        // Вычисляем проценты
+        val percents = mutableListOf(
+            (topLeft * 100.0 / total).roundToInt(),
+            (topRight * 100.0 / total).roundToInt(),
+            (bottomLeft * 100.0 / total).roundToInt(),
+            (bottomRight * 100.0 / total).roundToInt()
+        )
 
-        // Если путь нулевой (почти статично), fallback на подсчёт по точкам
-        if (totalLen == 0.0) {
-            var tl = 0; var tr = 0; var bl = 0; var br = 0
-            samples.forEach { s ->
-                val xScreen = -s.sxMm
-                val yScreen = s.syMm
-                when {
-                    yScreen >= 0 && xScreen < 0 -> tl++
-                    yScreen >= 0 && xScreen >= 0 -> tr++
-                    yScreen < 0 && xScreen < 0 -> bl++
-                    else -> br++
-                }
-            }
-            val total = samples.size
-            val percents = listOf(tl, tr, bl, br)
-                .map { (it * 100.0 / total).roundToInt() }
-                .toMutableList()
-            val diff = 100 - percents.sum()
-            if (diff != 0) {
-                val maxIdx = listOf(tl, tr, bl, br).withIndex().maxByOrNull { it.value }?.index ?: 0
-                percents[maxIdx] = (percents[maxIdx] + diff).coerceAtLeast(0)
-            }
-            updateCornerPercents("${percents[0]}%", "${percents[1]}%", "${percents[2]}%", "${percents[3]}%")
-            return
-        }
-
-        val percents = listOf(
-            (topLeftLen * 100.0 / totalLen).roundToInt(),
-            (topRightLen * 100.0 / totalLen).roundToInt(),
-            (bottomLeftLen * 100.0 / totalLen).roundToInt(),
-            (bottomRightLen * 100.0 / totalLen).roundToInt()
-        ).toMutableList()
-
-        // Подгоняем сумму к 100%
+        // Подгоняем сумму к 100% (корректируем наибольший квадрант)
         val diff = 100 - percents.sum()
         if (diff != 0) {
-            val lens = listOf(topLeftLen, topRightLen, bottomLeftLen, bottomRightLen)
-            val maxIdx = lens.withIndex().maxByOrNull { it.value }?.index ?: 0
+            val counts = listOf(topLeft, topRight, bottomLeft, bottomRight)
+            val maxIdx = counts.withIndex().maxByOrNull { it.value }?.index ?: 0
             percents[maxIdx] = (percents[maxIdx] + diff).coerceAtLeast(0)
         }
 
         updateCornerPercents(
-            "${percents[0]}%",
-            "${percents[1]}%",
-            "${percents[2]}%",
-            "${percents[3]}%"
+            "${percents[0]}%",  // topLeft
+            "${percents[1]}%",  // topRight
+            "${percents[2]}%",  // bottomLeft
+            "${percents[3]}%"   // bottomRight
         )
     }
 
@@ -655,6 +767,8 @@ class BalanceTestTargetActivity : AppCompatActivity() {
         isTestRunning = false
         showTestSetupUI()
         binding.testDurationDisplay.text = selectedTestDuration.toString()
+        // "Взводим" автостарт для нового теста
+        armAutostart()
     }
 
     private fun showSensorSelectionDialog() {
@@ -663,9 +777,10 @@ class BalanceTestTargetActivity : AppCompatActivity() {
             setContentView(R.layout.dialog_sensor_selection)
             window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             window?.setLayout(
-                (resources.displayMetrics.widthPixels * 0.9).toInt(),
-                (resources.displayMetrics.heightPixels * 0.6).toInt()
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT
             )
+            window?.setGravity(Gravity.CENTER)
             setCancelable(true)
         }
 

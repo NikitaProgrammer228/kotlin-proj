@@ -4,7 +4,7 @@
             "outputFile": "com.accelerometer.app-mergeDebugResources-39:/values-w360dp-port-v13/values-w360dp-port-v13.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\069b00c69cfda3d47ac5fc84cdf8431b\\transformed\\material-1.11.0\\res\\values-w360dp-port-v13\\values-w360dp-port-v13.xml",
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\a1ac38ae573a5a8ea1b4924ea36ffa4d\\transformed\\material-1.11.0\\res\\values-w360dp-port-v13\\values-w360dp-port-v13.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",

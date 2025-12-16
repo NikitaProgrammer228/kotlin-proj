@@ -4,7 +4,7 @@
             "outputFile": "com.accelerometer.app-mergeDebugResources-39:/values-h550dp-port-v13/values-h550dp-port-v13.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\069b00c69cfda3d47ac5fc84cdf8431b\\transformed\\material-1.11.0\\res\\values-h550dp-port-v13\\values-h550dp-port-v13.xml",
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\a1ac38ae573a5a8ea1b4924ea36ffa4d\\transformed\\material-1.11.0\\res\\values-h550dp-port-v13\\values-h550dp-port-v13.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
