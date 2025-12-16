@@ -2,21 +2,19 @@ package com.accelerometer.app.measurement
 
 import android.util.Log
 import kotlin.math.abs
+import kotlin.math.exp
 import kotlin.math.sqrt
 
 /**
  * Процессор движения по алгоритму MicroSwing.
  * 
- * ИСПОЛЬЗУЕТ ДВОЙНУЮ ИНТЕГРАЦИЮ УСКОРЕНИЯ (как в немецком MicroSwing):
- * AccX/AccY → VelX/VelY → PosX/PosY
- * 
- * Этапы обработки (согласно ТЗ):
- * 1. Фильтрация (LPF 5 Гц для шумоподавления)
- * 2. Калибровка bias (вычитание среднего ускорения в покое)
- * 3. Первая интеграция: ускорение → скорость
- * 4. Вторая интеграция: скорость → позиция
- * 5. Коррекция дрейфа (velocity damping)
- * 6. Детекция амплитуд и артефактов
+ * Использует ДВОЙНУЮ ИНТЕГРАЦИЮ УСКОРЕНИЯ с правильной обработкой:
+ * 1. Перевод g → m/s² → mm/s²
+ * 2. Калибровка bias (200+ сэмплов)
+ * 3. Low-pass для выделения gravity
+ * 4. High-pass для убирания DC/дрейфа
+ * 5. Интеграция с демпфированием скорости
+ * 6. ZUPT (обнуление скорости при покое)
  */
 class MicroSwingMotionProcessor(
     private val expectedSampleRateHz: Double = MeasurementConfig.EXPECTED_SAMPLE_RATE_HZ
@@ -24,92 +22,90 @@ class MicroSwingMotionProcessor(
     private val tag = "MotionProcessor"
     
     data class MotionState(
-        val axMm: Double,      // Ускорение X в мм/с² (после фильтрации)
-        val ayMm: Double,      // Ускорение Y в мм/с²
+        val axMm: Double,      // Отфильтрованное ускорение X в мм/с²
+        val ayMm: Double,      // Отфильтрованное ускорение Y в мм/с²
         val vxMm: Double,      // Скорость X в мм/с
         val vyMm: Double,      // Скорость Y в мм/с
-        val sxMm: Double,      // Позиция X (ограниченная для отображения)
-        val syMm: Double,      // Позиция Y (ограниченная для отображения)
+        val sxMm: Double,      // Позиция X (для отображения, с ограничением)
+        val syMm: Double,      // Позиция Y (для отображения, с ограничением)
         val sxMmRaw: Double,   // Позиция X (сырая, для расчёта метрик)
         val syMmRaw: Double,   // Позиция Y (сырая, для расчёта метрик)
         val hasArtifact: Boolean = false
     )
 
     companion object {
-        // Ускорение свободного падения (м/с²)
-        private const val G_TO_M_S2 = 9.80665
-        // Преобразование м → мм
-        private const val M_TO_MM = 1000.0
-        // g → мм/с²
-        private const val G_TO_MM_S2 = G_TO_M_S2 * M_TO_MM  // ≈ 9806.65
+        // Физические константы
+        private const val G_MPS2 = 9.80665       // м/с²
+        private const val G_MMPS2 = 9806.65      // мм/с²
         
-        // Low-pass фильтр 5 Гц (согласно ТЗ MicroSwing)
-        // alpha = dt / (RC + dt), где RC = 1/(2*pi*fc), fc = 5 Гц
-        // При 50 Гц: dt = 0.02, RC = 0.0318, alpha ≈ 0.386
-        private const val LPF_CUTOFF_HZ = 5.0
+        // Калибровка: минимум 200 сэмплов (4 сек при 50 Гц)
+        private const val CALIBRATION_SAMPLES = 200
         
-        // Коэффициент затухания скорости для борьбы с дрейфом
-        // 0.98 = скорость уменьшается на 2% каждый кадр
-        private const val VELOCITY_DAMPING = 0.98
+        // Low-pass для выделения gravity (очень низкая частота, ~0.1 Гц)
+        private const val GRAVITY_LPF_HZ = 0.1
         
-        // Порог для ZUPT (Zero Velocity Update)
-        // Если ускорение меньше этого порога N кадров подряд - обнуляем скорость
-        private const val ZUPT_THRESHOLD_G = 0.015  // 0.015g ≈ 0.15 м/с²
-        private const val ZUPT_FRAMES = 5  // Кадров подряд для ZUPT
+        // High-pass для убирания DC/дрейфа (~0.3 Гц)
+        private const val SIGNAL_HPF_HZ = 0.3
+        
+        // Демпфирование скорости (экспоненциальное затухание)
+        private const val VELOCITY_DAMPING = 3.0  // подбирается
+        
+        // ZUPT порог (м/с²) — если ускорение меньше, считаем что стоит
+        private const val ZUPT_THRESHOLD_MPS2 = 0.15  // ~0.015g
+        private const val ZUPT_FRAMES = 5
+        
+        // Масштаб для визуализации (подбирается под немецкий софт)
+        private const val DISPLAY_SCALE = 50.0
     }
 
-    private val dt = 1.0 / expectedSampleRateHz
-
-    // Коэффициент low-pass фильтра
-    private val lpfAlpha: Double
-
+    // Время
+    private var lastTimestamp: Double? = null
+    
     // Калибровка bias
     private var calibrated = false
     private var calibrationSamples = 0
     private var biasAccX = 0.0
     private var biasAccY = 0.0
+    private var biasAccZ = 0.0
 
-    // Low-pass фильтр (состояние)
-    private var lpfAccX = 0.0
-    private var lpfAccY = 0.0
-    private var lpfInitialized = false
+    // Low-pass фильтры для выделения gravity
+    private val lpfGravityX = LowPassFilter(GRAVITY_LPF_HZ)
+    private val lpfGravityY = LowPassFilter(GRAVITY_LPF_HZ)
+    private val lpfGravityZ = LowPassFilter(GRAVITY_LPF_HZ)
+    
+    // High-pass фильтры для убирания DC
+    private val hpfX = HighPassFilter(SIGNAL_HPF_HZ)
+    private val hpfY = HighPassFilter(SIGNAL_HPF_HZ)
 
-    // Интеграция: скорость и позиция
-    private var velX = 0.0
+    // Интеграция
+    private var velX = 0.0  // мм/с
     private var velY = 0.0
-    private var posX = 0.0
+    private var posX = 0.0  // мм (без ограничения!)
     private var posY = 0.0
 
-    // ZUPT (детекция покоя)
+    // ZUPT
     private var zuptCounter = 0
 
     private var sampleCount = 0
 
-    init {
-        // Вычисляем alpha для LPF: alpha = dt / (RC + dt)
-        val rc = 1.0 / (2.0 * Math.PI * LPF_CUTOFF_HZ)
-        lpfAlpha = dt / (rc + dt)
-        
-        if (MeasurementConfig.ENABLE_DEBUG_LOGS) {
-            Log.d(tag, "MicroSwing processor init: dt=$dt, lpfAlpha=$lpfAlpha")
-        }
-    }
-
     fun reset() {
+        lastTimestamp = null
         calibrated = false
         calibrationSamples = 0
         biasAccX = 0.0
         biasAccY = 0.0
-
-        lpfAccX = 0.0
-        lpfAccY = 0.0
-        lpfInitialized = false
-
+        biasAccZ = 0.0
+        
+        lpfGravityX.reset()
+        lpfGravityY.reset()
+        lpfGravityZ.reset()
+        hpfX.reset()
+        hpfY.reset()
+        
         velX = 0.0
         velY = 0.0
         posX = 0.0
         posY = 0.0
-
         zuptCounter = 0
         sampleCount = 0
     }
@@ -120,133 +116,201 @@ class MicroSwingMotionProcessor(
         axG: Double,
         ayG: Double,
         azG: Double,
-        angleXDeg: Double,  // Не используется в MicroSwing-алгоритме
-        angleYDeg: Double,  // Не используется в MicroSwing-алгоритме
+        angleXDeg: Double,
+        angleYDeg: Double,
         timestampSec: Double
     ): MotionState {
         sampleCount++
+        
+        // === Вычисляем dt по реальным timestamp ===
+        val dt = if (lastTimestamp != null) {
+            (timestampSec - lastTimestamp!!).coerceIn(0.001, 0.1)  // защита от выбросов
+        } else {
+            1.0 / expectedSampleRateHz
+        }
+        lastTimestamp = timestampSec
 
-        // === Калибровка bias (среднее ускорение в покое) ===
+        // === Перевод g → m/s² ===
+        val axMps2 = axG * G_MPS2
+        val ayMps2 = ayG * G_MPS2
+        val azMps2 = azG * G_MPS2
+
+        // === Калибровка bias (накапливаем среднее) ===
         if (!calibrated) {
-            if (!MeasurementConfig.ENABLE_CALIBRATION) {
-                // Калибровка выключена — используем первый сэмпл как bias
-                biasAccX = axG
-                biasAccY = ayG
+            biasAccX += axMps2
+            biasAccY += ayMps2
+            biasAccZ += azMps2
+            calibrationSamples++
+
+            if (calibrationSamples >= CALIBRATION_SAMPLES) {
+                biasAccX /= calibrationSamples
+                biasAccY /= calibrationSamples
+                biasAccZ /= calibrationSamples
                 calibrated = true
-                lpfAccX = 0.0
-                lpfAccY = 0.0
-                lpfInitialized = true
                 
+                // Инициализируем gravity фильтры начальными значениями
+                lpfGravityX.init(biasAccX)
+                lpfGravityY.init(biasAccY)
+                lpfGravityZ.init(biasAccZ)
+
                 if (MeasurementConfig.ENABLE_DEBUG_LOGS) {
-                    Log.d(tag, "Quick calibration: biasX=${biasAccX.format(4)}g, biasY=${biasAccY.format(4)}g")
+                    Log.d(tag, "Calibration done: biasX=${biasAccX.format(4)} biasY=${biasAccY.format(4)} biasZ=${biasAccZ.format(4)} m/s², samples=$calibrationSamples")
                 }
             } else {
-                // Накапливаем сэмплы для усреднения
-                val calibrationSamplesNeeded = (MeasurementConfig.MOTION_CALIBRATION_DURATION_SEC * expectedSampleRateHz)
-                    .toInt()
-                    .coerceAtLeast(10)
-
-                biasAccX += axG
-                biasAccY += ayG
-                calibrationSamples++
-
-                if (calibrationSamples >= calibrationSamplesNeeded) {
-                    biasAccX /= calibrationSamples
-                    biasAccY /= calibrationSamples
-                    calibrated = true
-                    
-                    // Инициализируем LPF нулём (после вычитания bias)
-                    lpfAccX = 0.0
-                    lpfAccY = 0.0
-                    lpfInitialized = true
-
-                    if (MeasurementConfig.ENABLE_DEBUG_LOGS) {
-                        Log.d(tag, "Calibration done: biasX=${biasAccX.format(4)}g, biasY=${biasAccY.format(4)}g, samples=$calibrationSamples")
-                    }
-                } else {
-                    return MotionState(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
-                }
+                return MotionState(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false)
             }
         }
 
         // === Вычитаем bias ===
         val invertX = MeasurementConfig.AXIS_INVERT_X
         val invertY = MeasurementConfig.AXIS_INVERT_Y
-        var accX = (axG - biasAccX) * invertX
-        var accY = (ayG - biasAccY) * invertY
+        var ax = (axMps2 - biasAccX) * invertX
+        var ay = (ayMps2 - biasAccY) * invertY
+        val az = azMps2 - biasAccZ
 
-        // === Low-pass фильтр 5 Гц (для шумоподавления) ===
-        if (!lpfInitialized) {
-            lpfAccX = accX
-            lpfAccY = accY
-            lpfInitialized = true
-        } else {
-            lpfAccX = lpfAlpha * accX + (1.0 - lpfAlpha) * lpfAccX
-            lpfAccY = lpfAlpha * accY + (1.0 - lpfAlpha) * lpfAccY
-        }
-        accX = lpfAccX
-        accY = lpfAccY
+        // === Low-pass для выделения gravity (медленная составляющая) ===
+        val gX = lpfGravityX.update(ax, dt)
+        val gY = lpfGravityY.update(ay, dt)
+        
+        // === Линейное ускорение (без gravity) ===
+        val linX = ax - gX
+        val linY = ay - gY
 
-        // === Преобразование g → мм/с² ===
-        val accXMmS2 = accX * G_TO_MM_S2
-        val accYMmS2 = accY * G_TO_MM_S2
+        // === High-pass для убирания DC/дрейфа ===
+        val fx = hpfX.update(linX, dt)
+        val fy = hpfY.update(linY, dt)
+        
+        // === Перевод m/s² → mm/s² для отображения ===
+        val fxMm = fx * 1000.0
+        val fyMm = fy * 1000.0
 
-        // === ZUPT (Zero Velocity Update) ===
-        // Если ускорение мало N кадров подряд — обнуляем скорость
-        val accMagnitude = sqrt(accX * accX + accY * accY)
-        if (accMagnitude < ZUPT_THRESHOLD_G) {
+        // === ZUPT: обнуляем скорость при покое ===
+        val aMag = sqrt(fx * fx + fy * fy)
+        if (aMag < ZUPT_THRESHOLD_MPS2) {
             zuptCounter++
             if (zuptCounter >= ZUPT_FRAMES) {
                 velX = 0.0
                 velY = 0.0
+                // Медленный возврат позиции к нулю
+                posX *= 0.99
+                posY *= 0.99
             }
         } else {
             zuptCounter = 0
         }
 
-        // === Первая интеграция: ускорение → скорость ===
-        velX += accXMmS2 * dt
-        velY += accYMmS2 * dt
+        // === Интеграция: ускорение → скорость (в мм/с) ===
+        velX += fxMm * dt
+        velY += fyMm * dt
 
-        // === Velocity damping (затухание для борьбы с дрейфом) ===
-        velX *= VELOCITY_DAMPING
-        velY *= VELOCITY_DAMPING
+        // === Демпфирование скорости (экспоненциальное затухание) ===
+        val dampingFactor = exp(-VELOCITY_DAMPING * dt)
+        velX *= dampingFactor
+        velY *= dampingFactor
 
-        // === Вторая интеграция: скорость → позиция ===
+        // === Интеграция: скорость → позиция (в мм) ===
         posX += velX * dt
         posY += velY * dt
 
-        // === Детекция артефактов ДО ограничения ===
+        // === Масштабирование для отображения ===
+        val displayPosX = posX * DISPLAY_SCALE
+        val displayPosY = posY * DISPLAY_SCALE
+
+        // === Детекция артефактов (на немасштабированных данных) ===
         val limit = MeasurementConfig.MOTION_POSITION_LIMIT_MM
-        val hasArtifact = abs(posX) > limit || abs(posY) > limit
+        val hasArtifact = abs(displayPosX) > limit || abs(displayPosY) > limit
 
-        // Сохраняем сырые значения для метрик
-        val posXRaw = posX
-        val posYRaw = posY
+        // === Ограничение ТОЛЬКО для отрисовки, не для расчётов ===
+        val clampedPosX = displayPosX.coerceIn(-limit, limit)
+        val clampedPosY = displayPosY.coerceIn(-limit, limit)
 
-        // === Ограничение позиции (±40 мм согласно ТЗ) ===
-        val posXClamped = posX.coerceIn(-limit, limit)
-        val posYClamped = posY.coerceIn(-limit, limit)
-
-        if (MeasurementConfig.ENABLE_DEBUG_LOGS && sampleCount % 25 == 0) {
-            Log.d(tag, "t=${timestampSec.format(2)} " +
-                "acc=(${accX.format(4)}g, ${accY.format(4)}g) " +
+        if (MeasurementConfig.ENABLE_DEBUG_LOGS && sampleCount % 50 == 0) {
+            Log.d(tag, "dt=${dt.format(4)} " +
+                "acc=(${ax.format(4)}, ${ay.format(4)}) " +
+                "lin=(${linX.format(4)}, ${linY.format(4)}) " +
+                "filt=(${fx.format(4)}, ${fy.format(4)}) m/s² " +
                 "vel=(${velX.format(1)}, ${velY.format(1)}) " +
-                "pos=(${posXClamped.format(1)}, ${posYClamped.format(1)}) mm")
+                "pos=(${displayPosX.format(1)}, ${displayPosY.format(1)}) mm")
         }
 
         return MotionState(
-            axMm = accXMmS2,
-            ayMm = accYMmS2,
+            axMm = fxMm,
+            ayMm = fyMm,
             vxMm = velX,
             vyMm = velY,
-            sxMm = posXClamped,
-            syMm = posYClamped,
-            sxMmRaw = posXRaw,
-            syMmRaw = posYRaw,
+            sxMm = clampedPosX,
+            syMm = clampedPosY,
+            sxMmRaw = displayPosX,
+            syMmRaw = displayPosY,
             hasArtifact = hasArtifact
         )
     }
 
     private fun Double.format(decimals: Int = 4): String = String.format("%.${decimals}f", this)
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // Вспомогательные классы фильтров
+    // ═══════════════════════════════════════════════════════════════════
+    
+    /**
+     * Low-pass фильтр (1-pole IIR)
+     * Используется для выделения gravity (медленной составляющей)
+     */
+    private class LowPassFilter(private val cutoffHz: Double) {
+        private var y = 0.0
+        private var initialized = false
+        
+        fun init(value: Double) {
+            y = value
+            initialized = true
+        }
+        
+        fun reset() {
+            y = 0.0
+            initialized = false
+        }
+        
+        fun update(x: Double, dt: Double): Double {
+            if (!initialized) {
+                y = x
+                initialized = true
+                return y
+            }
+            val rc = 1.0 / (2.0 * Math.PI * cutoffHz)
+            val alpha = dt / (rc + dt)
+            y += alpha * (x - y)
+            return y
+        }
+    }
+    
+    /**
+     * High-pass фильтр (1-pole IIR)
+     * Используется для убирания DC/дрейфа
+     */
+    private class HighPassFilter(private val cutoffHz: Double) {
+        private var prevX = 0.0
+        private var prevY = 0.0
+        private var initialized = false
+        
+        fun reset() {
+            prevX = 0.0
+            prevY = 0.0
+            initialized = false
+        }
+        
+        fun update(x: Double, dt: Double): Double {
+            if (!initialized) {
+                prevX = x
+                prevY = 0.0
+                initialized = true
+                return 0.0
+            }
+            val rc = 1.0 / (2.0 * Math.PI * cutoffHz)
+            val alpha = rc / (rc + dt)
+            val y = alpha * (prevY + x - prevX)
+            prevX = x
+            prevY = y
+            return y
+        }
+    }
 }
