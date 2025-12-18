@@ -1,19 +1,22 @@
 package com.accelerometer.app.bluetooth
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.SystemClock
 import android.util.Log
 import com.accelerometer.app.data.SensorSample
-import com.wit.witsdk.modular.sensor.modular.connector.modular.bluetooth.BluetoothBLE
-import com.wit.witsdk.modular.sensor.modular.connector.modular.bluetooth.BluetoothSPP
-import com.wit.witsdk.modular.sensor.modular.connector.modular.bluetooth.WitBluetoothManager
-import com.wit.witsdk.modular.sensor.modular.connector.modular.bluetooth.exceptions.BluetoothBLEException
-import com.wit.witsdk.modular.sensor.modular.connector.modular.bluetooth.interfaces.IBluetoothFoundObserver
-import com.wit.witsdk.modular.sensor.device.exceptions.OpenDeviceException
-import com.wit.witsdk.modular.sensor.modular.processor.constant.WitSensorKey
-import com.wit.witsdk.modular.sensor.example.ble5.Bwt901ble
-import com.wit.witsdk.modular.sensor.example.ble5.interfaces.IBwt901bleRecordObserver
+import com.wit.witsdk.sensor.modular.connector.modular.bluetooth.BluetoothBLE
+import com.wit.witsdk.sensor.modular.connector.modular.bluetooth.BluetoothSPP
+import com.wit.witsdk.sensor.modular.connector.modular.bluetooth.WitBluetoothManager
+import com.wit.witsdk.sensor.modular.connector.modular.bluetooth.exceptions.BluetoothBLEException
+import com.wit.witsdk.sensor.modular.connector.modular.bluetooth.interfaces.IBluetoothFoundObserver
+import com.wit.witsdk.sensor.modular.device.exceptions.OpenDeviceException
+import com.wit.example.ble5.Bwt901ble
+import com.wit.example.ble5.interfaces.IBwt901bleRecordObserver
+import com.wit.example.ble5.data.WitSensorKey
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -30,7 +33,9 @@ class BluetoothAccelerometerService(
 
     companion object {
         private const val TAG = "BluetoothAccelerometer"
-        private val DEVICE_NAME_FILTER = listOf("WT", "BWT", "WT901")
+        // Фильтр по имени устройства. Если пустой список - показываем все BLE устройства
+        // Можно добавить другие варианты имен, например: "WT901BLECL", "WIT-MOTION", и т.д.
+        private val DEVICE_NAME_FILTER = listOf("WT", "BWT", "WT901", "WIT", "BLECL")
     }
 
     private var bluetoothManager: WitBluetoothManager? = null
@@ -46,6 +51,10 @@ class BluetoothAccelerometerService(
 
     private val _batteryLevel = MutableStateFlow(0)
     val batteryLevel: StateFlow<Int> = _batteryLevel.asStateFlow()
+    
+    // Счётчик частоты данных
+    private var sampleCount = 0
+    private var lastLogTime = System.currentTimeMillis()
 
     data class DiscoveredDevice(
         val name: String?,
@@ -59,8 +68,12 @@ class BluetoothAccelerometerService(
 
     private fun initBluetoothManager() {
         try {
-            if (bluetoothManager != null) return
+            if (bluetoothManager != null) {
+                Log.d(TAG, "BluetoothManager already initialized")
+                return
+            }
 
+            Log.d(TAG, "Initializing WitBluetoothManager...")
             if (context is Activity) {
                 WitBluetoothManager.requestPermissions(context)
                 WitBluetoothManager.initInstance(context)
@@ -68,8 +81,19 @@ class BluetoothAccelerometerService(
                 WitBluetoothManager.initInstance(context.applicationContext)
             }
             bluetoothManager = WitBluetoothManager.getInstance()
+            
+            // ⚠️ КРИТИЧЕСКИ ВАЖНО: SDK фильтрует устройства по DeviceNameFilter
+            // Если список пуст, SDK НЕ ПОКАЗЫВАЕТ устройства!
+            // Добавляем наши фильтры в SDK
+            val sdkFilter = WitBluetoothManager.DeviceNameFilter
+            sdkFilter.clear()
+            DEVICE_NAME_FILTER.forEach { filter ->
+                sdkFilter.add(filter)
+                Log.d(TAG, "Added to SDK filter: $filter")
+            }
+            Log.i(TAG, "✅ WitBluetoothManager initialized successfully with ${sdkFilter.size} name filters")
         } catch (ex: Exception) {
-            Log.e(TAG, "Failed to init WitBluetoothManager", ex)
+            Log.e(TAG, "❌ Failed to init WitBluetoothManager", ex)
         }
     }
 
@@ -96,13 +120,86 @@ class BluetoothAccelerometerService(
      */
     fun startDiscoveryForSelection() {
         initBluetoothManager()
-        val manager = bluetoothManager ?: return
+        val manager = bluetoothManager ?: run {
+            Log.e(TAG, "❌ BluetoothManager is null, cannot start discovery")
+            return
+        }
         discoveredDevices.clear()
+        Log.i(TAG, "🔍 Starting device discovery for selection...")
         try {
+            // Проверяем, зарегистрирован ли уже observer
+            Log.d(TAG, "Registering observer: ${this::class.simpleName}")
             manager.registerObserver(this)
+            Log.d(TAG, "Observer registered successfully")
+            
+            // Проверяем состояние Bluetooth адаптера
+            val bluetoothAdapter = android.bluetooth.BluetoothAdapter.getDefaultAdapter()
+            if (bluetoothAdapter == null) {
+                Log.e(TAG, "❌ Bluetooth adapter is null - Bluetooth not supported")
+                return
+            }
+            if (!bluetoothAdapter.isEnabled) {
+                Log.e(TAG, "❌ Bluetooth adapter is not enabled")
+                return
+            }
+            Log.d(TAG, "✅ Bluetooth adapter is enabled")
+            
+            // ⚠️ ВАЖНО: Проверяем уже сопряженные устройства
+            // SDK может не находить уже сопряженные устройства через сканирование
+            try {
+                @SuppressLint("MissingPermission")
+                val pairedDevices: Set<BluetoothDevice> = bluetoothAdapter.bondedDevices
+                Log.d(TAG, "📱 Found ${pairedDevices.size} paired devices")
+                pairedDevices.forEach { device ->
+                    val deviceName = device.name ?: "Unknown"
+                    val deviceMac = device.address
+                    Log.d(TAG, "  - Paired device: $deviceName ($deviceMac)")
+                    
+                    // Проверяем, подходит ли устройство по фильтру
+                    if (matchesDeviceName(deviceName)) {
+                        // Проверяем тип устройства
+                        try {
+                            @SuppressLint("MissingPermission")
+                            val deviceType = device.type
+                            if (deviceType == BluetoothDevice.DEVICE_TYPE_LE || deviceType == BluetoothDevice.DEVICE_TYPE_DUAL) {
+                                // Создаем BluetoothBLE объект для сопряженного устройства
+                                val bluetoothBLE = com.wit.witsdk.sensor.modular.connector.modular.bluetooth.BluetoothBLE(
+                                    context as? Activity ?: context.applicationContext as Activity,
+                                    deviceMac,
+                                    deviceName
+                                )
+                                bluetoothBLE.setUUID(
+                                    com.wit.witsdk.sensor.modular.connector.modular.bluetooth.constant.BleUUID.UUID_SERVICE.toString(),
+                                    com.wit.witsdk.sensor.modular.connector.modular.bluetooth.constant.BleUUID.UUID_SEND.toString(),
+                                    com.wit.witsdk.sensor.modular.connector.modular.bluetooth.constant.BleUUID.UUID_READ.toString()
+                                )
+                                
+                                if (discoveredDevices.none { it.mac == deviceMac }) {
+                                    discoveredDevices.add(DiscoveredDevice(deviceName, deviceMac, bluetoothBLE))
+                                    Log.i(TAG, "✅ Added paired device to list: $deviceName ($deviceMac)")
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to get device type for $deviceName", e)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to get paired devices", e)
+            }
+            
+            Log.d(TAG, "Calling manager.startDiscovery()...")
             manager.startDiscovery()
+            Log.d(TAG, "✅ Discovery started successfully")
+            
+            // Логируем через 2 секунды, чтобы увидеть, были ли найдены устройства
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                Log.d(TAG, "📊 Discovery status after 2s: found ${discoveredDevices.size} devices")
+            }, 2000)
         } catch (ex: BluetoothBLEException) {
-            Log.e(TAG, "Discovery failed", ex)
+            Log.e(TAG, "❌ Discovery failed", ex)
+        } catch (ex: Exception) {
+            Log.e(TAG, "❌ Unexpected error during discovery", ex)
         }
     }
 
@@ -127,6 +224,11 @@ class BluetoothAccelerometerService(
             connectedDevice = sensor
             sensor.registerRecordObserver(this)
             sensor.open()
+            
+            // ⚡ HIGH PRIORITY автоматически устанавливается через bluetoothkit
+            // (InukerBluetoothBLE.connect() передаёт BleConnectOptions, 
+            //  BleConnectWorker автоматически вызывает requestConnectionPriority(HIGH))
+            
             configureSensor(sensor)
             _connectionState.value = ConnectionState.CONNECTED
         } catch (ex: OpenDeviceException) {
@@ -163,16 +265,21 @@ class BluetoothAccelerometerService(
     }
 
     override fun onFoundBle(bluetoothBLE: BluetoothBLE) {
+        // Логируем все найденные устройства для отладки
+        Log.i(TAG, "🔍 Found BLE device: name='${bluetoothBLE.name}', mac='${bluetoothBLE.mac}'")
+        
         if (!matchesDeviceName(bluetoothBLE.name)) {
-            Log.d(TAG, "Skip device ${bluetoothBLE.name} not matching filter")
+            Log.d(TAG, "⏭️ Skip device '${bluetoothBLE.name}' (${bluetoothBLE.mac}) - not matching filter ${DEVICE_NAME_FILTER}")
             return
         }
         
         // Если это режим выбора устройств, добавляем в список без подключения
         if (discoveredDevices.none { it.mac == bluetoothBLE.mac }) {
             discoveredDevices.add(DiscoveredDevice(bluetoothBLE.name, bluetoothBLE.mac, bluetoothBLE))
-            Log.d(TAG, "Discovered device: ${bluetoothBLE.name} (${bluetoothBLE.mac})")
+            Log.i(TAG, "✅ Added device to list: ${bluetoothBLE.name} (${bluetoothBLE.mac}), total devices: ${discoveredDevices.size}")
             return
+        } else {
+            Log.d(TAG, "⚠️ Device ${bluetoothBLE.mac} already in list, skipping")
         }
         
         // Старый режим автоподключения (для обратной совместимости)
@@ -185,6 +292,11 @@ class BluetoothAccelerometerService(
         sensor.registerRecordObserver(this)
         try {
             sensor.open()
+            
+            // ⚡ HIGH PRIORITY автоматически устанавливается через bluetoothkit
+            // (InukerBluetoothBLE.connect() передаёт BleConnectOptions, 
+            //  BleConnectWorker автоматически вызывает requestConnectionPriority(HIGH))
+            
             // Настраиваем датчик на 50 Гц (RRATE_50HZ = 0x08)
             configureSensor(sensor)
             stopDiscovery()
@@ -196,39 +308,206 @@ class BluetoothAccelerometerService(
     }
 
     /**
-     * Настройка датчика: частота 50 Гц, разблокировка регистров
+     * Настройка датчика для МАКСИМАЛЬНОЙ частоты по BLE.
+     * 
+     * КЛЮЧЕВОЕ РЕШЕНИЕ от заказчика:
+     * Канал BLE перегружен лишними данными (углы, гироскоп, магнитометр, батарея).
+     * Если установить RSW (Return Content) ТОЛЬКО на ускорение,
+     * канал освободится и датчик сможет выдавать 50 Hz вместо 10 Hz.
+     * 
+     * Регистры:
+     * - RSW (0x02): Что возвращать (RSW_ACC=0x02 - только ускорение)
+     * - RRATE (0x03): Частота (RRATE_50HZ=0x08)
      */
     private fun configureSensor(sensor: Bwt901ble) {
-        try {
-            // Разблокируем регистры для записи
-            sensor.unlockReg()
-            Thread.sleep(100)
-            
-            // Устанавливаем частоту 50 Гц (0x08 = RRATE_50HZ)
-            sensor.setReturnRate(0x08.toByte())
-            Thread.sleep(100)
-            
-            // Сохраняем настройки (команда: FF AA 00 00 00)
-            sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x00, 0x00, 0x00))
-            
-            Log.i(TAG, "Sensor configured: 50 Hz output rate")
-        } catch (ex: Exception) {
-            Log.w(TAG, "Failed to configure sensor", ex)
-        }
+        Thread {
+            try {
+                Log.i(TAG, "🔧 Configuring sensor for 50 Hz (optimized for BLE)...")
+                
+                // ⚠️ ВАЖНО: Ждём пока соединение полностью установится
+                // Датчик должен быть готов к приёму команд
+                var waitCount = 0
+                while (!sensor.isOpen() && waitCount < 20) {
+                    Thread.sleep(100)
+                    waitCount++
+                }
+                if (!sensor.isOpen()) {
+                    Log.w(TAG, "⚠️ Sensor not ready after ${waitCount * 100}ms, proceeding anyway...")
+                } else {
+                    Log.d(TAG, "✅ Sensor is ready (waited ${waitCount * 100}ms)")
+                }
+                
+                // Дополнительная задержка для стабилизации соединения
+                Thread.sleep(500)
+                
+                // === ШАГ 1: Разблокировка регистров ===
+                // FF AA 69 88 B5 - unlock command
+                Log.d(TAG, "→ Sending UNLOCK command...")
+                sensor.unlockReg()
+                Thread.sleep(800)  // Увеличена задержка для записи в EEPROM
+                Log.d(TAG, "→ Registers unlocked")
+                
+                // === ШАГ 2: КРИТИЧЕСКИ ВАЖНО - Установка Return Content ===
+                // Регистр RSW (0x02): Что возвращать
+                // RSW_TIME=0x01, RSW_ACC=0x02, RSW_GYRO=0x04, RSW_ANGLE=0x08, RSW_MAG=0x10
+                // 
+                // ⚠️ По умолчанию датчик отправляет ВСЁ (ACC+GYRO+ANGLE+MAG = 0x1E),
+                // что забивает BLE канал и ограничивает частоту до 10 Hz!
+                //
+                // Устанавливаем ТОЛЬКО ускорение (RSW_ACC = 0x02):
+                // FF AA 02 02 00
+                Log.d(TAG, "→ Sending RSW=0x02 (ACC_ONLY) command: FF AA 02 02 00")
+                val rswCommand = byteArrayOf(
+                    0xFF.toByte(), 0xAA.toByte(), 
+                    0x02,  // RSW register
+                    0x02,  // RSW_ACC only (acceleration)
+                    0x00   // high byte
+                )
+                sensor.sendProtocolData(rswCommand, 500)  // Используем метод с waitTime
+                Thread.sleep(800)  // Увеличена задержка для записи в EEPROM
+                Log.d(TAG, "→ ✓ Set RSW to ACC ONLY (0x02) - освобождаем BLE канал!")
+                
+                // === ШАГ 3: Установка частоты 50 Hz ===
+                // Регистр RRATE (0x03):
+                // 0x06=10Hz, 0x07=20Hz, 0x08=50Hz, 0x09=100Hz, 0x0B=200Hz
+                // 
+                // Используем 50 Hz - оптимальный баланс для BLE
+                // FF AA 03 08 00
+                Log.d(TAG, "→ Sending RRATE=0x08 (50Hz) command: FF AA 03 08 00")
+                val rrateCommand = byteArrayOf(
+                    0xFF.toByte(), 0xAA.toByte(), 
+                    0x03,  // RRATE register
+                    0x08,  // RRATE_50HZ
+                    0x00   // high byte
+                )
+                sensor.sendProtocolData(rrateCommand, 500)  // Используем метод с waitTime
+                Thread.sleep(800)  // Увеличена задержка для записи в EEPROM
+                Log.d(TAG, "→ Set return rate to 50 Hz")
+                
+                // Дублируем через SDK метод (на случай если прямой вызов не сработал)
+                Log.d(TAG, "→ Also calling setReturnRate(0x08) via SDK method...")
+                sensor.setReturnRate(0x08) // 50Hz (byte)
+                Thread.sleep(800)
+                
+                // === ШАГ 4: Установка диапазона ускорения ±2g ===
+                // Регистр 0x21 (ACCRANGE): 0x00=±2g, 0x01=±4g, 0x02=±8g, 0x03=±16g
+                // ±2g даёт большую точность для малых движений
+                Log.d(TAG, "→ Sending ACCRANGE=0x00 (±2g) command: FF AA 21 00 00")
+                val accRangeCommand = byteArrayOf(
+                    0xFF.toByte(), 0xAA.toByte(), 
+                    0x21,  // ACCRANGE register
+                    0x00,  // ±2g
+                    0x00   // high byte
+                )
+                sensor.sendProtocolData(accRangeCommand, 500)  // Используем метод с waitTime
+                Thread.sleep(800)  // Увеличена задержка для записи в EEPROM
+                Log.d(TAG, "→ Set acceleration range to ±2g")
+                
+                // === ШАГ 5: Сохранение настроек в EEPROM ===
+                // FF AA 00 00 00 - save to flash (SAVE register = 0x00)
+                Log.d(TAG, "→ Sending SAVE command to write to EEPROM...")
+                sensor.saveReg()  // Используем метод SDK вместо прямого вызова
+                Thread.sleep(1000)  // Увеличена задержка - запись в EEPROM требует времени
+                Log.d(TAG, "→ Settings saved to EEPROM")
+                
+                // === ШАГ 6: Читаем регистры для проверки (после сохранения) ===
+                // Ждём ещё немного, чтобы датчик успел сохранить
+                Thread.sleep(500)
+                
+                // Читаем RSW (0x02) - команда чтения: FF AA 27 02 00
+                Log.d(TAG, "→ Reading RSW register (0x02)...")
+                sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x27, 0x02, 0x00))
+                Thread.sleep(500)  // Увеличена задержка для получения ответа
+                val rswValue = sensor.getDeviceData("02")
+                Log.d(TAG, "  → RSW read result: '$rswValue'")
+                
+                // Читаем RRATE (0x03) - команда чтения: FF AA 27 03 00
+                Log.d(TAG, "→ Reading RRATE register (0x03)...")
+                sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x27, 0x03, 0x00))
+                Thread.sleep(500)  // Увеличена задержка для получения ответа
+                val currentRate = sensor.getDeviceData("03")
+                Log.d(TAG, "  → RRATE read result: '$currentRate'")
+                
+                // Читаем ACCRANGE (0x21) - команда чтения: FF AA 27 21 00
+                Log.d(TAG, "→ Reading ACCRANGE register (0x21)...")
+                sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x27, 0x21, 0x00))
+                Thread.sleep(500)  // Увеличена задержка для получения ответа
+                val accRange = sensor.getDeviceData("21")
+                Log.d(TAG, "  → ACCRANGE read result: '$accRange'")
+                
+                Log.i(TAG, "✓ Sensor configuration complete:")
+                Log.i(TAG, "  📤 RSW (return content): $rswValue (expect 2=ACC_ONLY)")
+                Log.i(TAG, "  ⏱️ RRATE (frequency): $currentRate (expect 8=50Hz)")
+                Log.i(TAG, "  📏 ACCRANGE: $accRange (expect 0=±2g)")
+                Log.i(TAG, "  🎯 Expected result: ~50 samples/sec instead of 10!")
+                
+            } catch (ex: Exception) {
+                Log.w(TAG, "Failed to configure sensor", ex)
+            }
+        }.start()
     }
+    
+    // ⚡ HIGH PRIORITY автоматически устанавливается через bluetoothkit:
+    // - InukerBluetoothBLE.connect() передаёт BleConnectOptions
+    // - BleConnectWorker.onConnectionStateChange() автоматически вызывает requestConnectionPriority(HIGH)
+    // - Логи можно найти по тегу "BleConnectWorker" в Logcat
 
     override fun onFoundSPP(bluetoothSPP: BluetoothSPP) {
+        Log.d(TAG, "🔍 onFoundSPP called (ignored - BLE-only app): name='${bluetoothSPP.name}', mac='${bluetoothSPP.mac}'")
         // BLE-only приложение, поэтому игнорируем
     }
 
+    override fun onFoundDual(bluetoothBLE: BluetoothBLE) {
+        Log.d(TAG, "🔍 onFoundDual called: name='${bluetoothBLE.name}', mac='${bluetoothBLE.mac}'")
+        // Обрабатываем как обычный BLE
+        onFoundBle(bluetoothBLE)
+    }
+
+    // Для редкого логирования батареи
+    private var lastBatteryLogTime = 0L
+    private var totalSampleCount = 0L  // Общий счётчик для логов
+    
     override fun onRecord(bwt901ble: Bwt901ble) {
-        // SDK возвращает значения уже в g (не raw), поэтому парсим напрямую как Double
-        val accXg = parseAccelerationG(bwt901ble.getDeviceData(WitSensorKey.AccX)) ?: return
-        val accYg = parseAccelerationG(bwt901ble.getDeviceData(WitSensorKey.AccY)) ?: return
-        val accZg = parseAccelerationG(bwt901ble.getDeviceData(WitSensorKey.AccZ)) ?: return
-        val angleX = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleX)) ?: return
-        val angleY = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleY)) ?: return
-        val angleZ = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleZ)) ?: return
+        // Счётчик частоты (логируем раз в секунду)
+        sampleCount++
+        totalSampleCount++
+        val now = System.currentTimeMillis()
+        if (now - lastLogTime >= 1000) {
+            Log.d(TAG, "📊 Sample rate: $sampleCount samples/sec (total: $totalSampleCount)")
+            sampleCount = 0
+            lastLogTime = now
+        }
+        
+        // Получаем RAW данные ускорения (int16)
+        val rawAccX = bwt901ble.getDeviceData("61_0")
+        val rawAccY = bwt901ble.getDeviceData("61_1")
+        val rawAccZ = bwt901ble.getDeviceData("61_2")
+        
+        // SDK парсит ускорения в g
+        val accXgStr = bwt901ble.getDeviceData(WitSensorKey.AccX)
+        val accYgStr = bwt901ble.getDeviceData(WitSensorKey.AccY)
+        val accZgStr = bwt901ble.getDeviceData(WitSensorKey.AccZ)
+        
+        val accXg = parseAccelerationG(accXgStr) ?: 0.0
+        val accYg = parseAccelerationG(accYgStr) ?: 0.0
+        val accZg = parseAccelerationG(accZgStr) ?: 0.0
+        
+        // Логируем проблему с нулевыми данными (только первые несколько раз)
+        if (totalSampleCount <= 5 && (accXg == 0.0 && accYg == 0.0 && accZg == 0.0)) {
+            Log.w(TAG, "⚠️ Zero acceleration data! RAW:($rawAccX,$rawAccY,$rawAccZ) SDK strings: AccX='$accXgStr', AccY='$accYgStr', AccZ='$accZgStr'")
+            Log.w(TAG, "   Check: RSW register should be 0x02 (ACC_ONLY). Current value: ${bwt901ble.getDeviceData("02")}")
+        }
+        
+        // Углы могут быть недоступны если RSW установлен на ACC_ONLY
+        // Используем 0.0 как значение по умолчанию
+        val angleX = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleX)) ?: 0.0
+        val angleY = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleY)) ?: 0.0
+        val angleZ = parseAngleDegrees(bwt901ble.getDeviceData(WitSensorKey.AngleZ)) ?: 0.0
+        
+        // Логируем RAW данные каждые 50 сэмплов (не чаще!)
+        if (totalSampleCount % 50 == 0L) {
+            Log.d(TAG, "📦 RAW:($rawAccX,$rawAccY,$rawAccZ) SDK:(${String.format("%.4f", accXg)}g,${String.format("%.4f", accYg)}g,${String.format("%.4f", accZg)}g)")
+        }
         
         val timestampSec = SystemClock.elapsedRealtimeNanos() / 1_000_000_000.0
         val sample = SensorSample(
@@ -244,33 +523,21 @@ class BluetoothAccelerometerService(
             Log.w(TAG, "Dropped sensor sample due to backpressure")
         }
 
-        // Получаем уровень заряда батареи (напряжение в мВ, конвертируем в проценты)
-        try {
-            val voltageRaw = bwt901ble.getDeviceData("ElectricQuantityPercentage")
-            if (!voltageRaw.isNullOrBlank()) {
-                val voltage = voltageRaw.replace(',', '.').toDoubleOrNull()
-                if (voltage != null) {
-                    // Если SDK возвращает проценты напрямую
-                    val batteryPercent = voltage.toInt().coerceIn(0, 100)
-                    _batteryLevel.value = batteryPercent
-                    Log.d(TAG, "Battery level: $batteryPercent%")
-                }
-            }
-        } catch (ex: Exception) {
-            // Некоторые сенсоры могут не поддерживать PowerPercent, пробуем Voltage
+        // ⚠️ Батарею проверяем РЕДКО (раз в 30 секунд), чтобы не спамить BLE канал!
+        if (now - lastBatteryLogTime >= 30_000) {
+            lastBatteryLogTime = now
             try {
-                val voltageRaw = bwt901ble.getDeviceData("Voltage")
+                val voltageRaw = bwt901ble.getDeviceData("ElectricQuantityPercentage")
                 if (!voltageRaw.isNullOrBlank()) {
                     val voltage = voltageRaw.replace(',', '.').toDoubleOrNull()
                     if (voltage != null) {
-                        // Конвертируем напряжение в проценты (3.3V = 0%, 4.2V = 100%)
-                        val batteryPercent = ((voltage - 3.3) / (4.2 - 3.3) * 100).toInt().coerceIn(0, 100)
+                        val batteryPercent = voltage.toInt().coerceIn(0, 100)
                         _batteryLevel.value = batteryPercent
-                        Log.d(TAG, "Battery voltage: ${voltage}V -> $batteryPercent%")
+                        Log.d(TAG, "🔋 Battery: $batteryPercent%")
                     }
                 }
-            } catch (ex2: Exception) {
-                Log.w(TAG, "Failed to get battery level", ex2)
+            } catch (ex: Exception) {
+                // Игнорируем ошибки батареи - это не критично
             }
         }
     }
@@ -286,14 +553,11 @@ class BluetoothAccelerometerService(
 
     private fun parseAngleDegrees(raw: String?): Double? {
         if (raw.isNullOrBlank()) {
-            Log.w(TAG, "parseAngle: empty value")
+            // Углы могут быть недоступны если RSW установлен на ACC_ONLY - это нормально
             return null
         }
         val normalized = raw.replace(',', '.')
-        return normalized.toDoubleOrNull() ?: run {
-            Log.w(TAG, "parseAngle: cannot parse $raw")
-            null
-        }
+        return normalized.toDoubleOrNull()
     }
 
     private fun clearDevices() {
@@ -307,8 +571,17 @@ class BluetoothAccelerometerService(
 
     private fun matchesDeviceName(deviceName: String?): Boolean {
         if (DEVICE_NAME_FILTER.isEmpty()) return true
-        val normalized = deviceName?.uppercase() ?: return true
-        return DEVICE_NAME_FILTER.any { normalized.contains(it.uppercase()) }
+        // Если имя null или пустое, пропускаем (но логируем)
+        if (deviceName.isNullOrBlank()) {
+            Log.d(TAG, "⚠️ Device name is null or blank")
+            return false
+        }
+        val normalized = deviceName.uppercase()
+        val matches = DEVICE_NAME_FILTER.any { normalized.contains(it.uppercase()) }
+        if (!matches) {
+            Log.d(TAG, "❌ Device name '$deviceName' (normalized: '$normalized') doesn't match any filter: $DEVICE_NAME_FILTER")
+        }
+        return matches
     }
 
     enum class ConnectionState {

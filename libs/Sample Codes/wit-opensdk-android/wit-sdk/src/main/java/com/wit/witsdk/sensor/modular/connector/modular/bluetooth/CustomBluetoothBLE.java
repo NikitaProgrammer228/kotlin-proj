@@ -61,8 +61,24 @@ public class CustomBluetoothBLE implements Observerable {
         @SuppressLint("MissingPermission")
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            Log.d(TAG, "onConnectionStateChange: status=" + status + ", newState=" + newState);
 
             if (newState == BluetoothGatt.STATE_CONNECTED) {
+                Log.i(TAG, "✅ BLE Connected! Requesting HIGH priority for better throughput...");
+                // ⚡ REQUEST HIGH PRIORITY FOR BETTER BLE THROUGHPUT (40-50 Hz instead of 10 Hz)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    try {
+                        boolean result = gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
+                        Log.i(TAG, "⚡ requestConnectionPriority(HIGH) = " + result + " (SDK version: " + Build.VERSION.SDK_INT + ")");
+                        if (!result) {
+                            Log.w(TAG, "⚠️ requestConnectionPriority returned false - connection priority may not be set");
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "❌ Failed to request connection priority", e);
+                    }
+                } else {
+                    Log.w(TAG, "⚠️ Android version < LOLLIPOP, cannot use requestConnectionPriority");
+                }
                 gatt.discoverServices();//四.连接蓝牙成功之后，发现服务
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                 isOpened = false;

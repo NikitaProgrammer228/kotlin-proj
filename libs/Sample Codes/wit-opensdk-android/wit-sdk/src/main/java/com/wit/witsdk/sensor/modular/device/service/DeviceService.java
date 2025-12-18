@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.wit.sdk.R;
+import com.wit.witsdk.R;
 import com.wit.witsdk.broadcast.InvokeMethodBroadcastReceiver;
 import com.wit.witsdk.sensor.modular.device.DeviceModel;
 import com.wit.witsdk.sensor.modular.device.DeviceModelManager;

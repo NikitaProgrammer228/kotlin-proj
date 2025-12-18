@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'org.jetbrains.kotlin.kapt'
+    id 'com.google.devtools.ksp'
 }
 
 android {
@@ -39,13 +39,8 @@ android {
     }
 }
 
-kapt {
-    correctErrorTypes = true
-    // Allow KAPT to see compile classpath (WitMotion SDK interfaces live there)
-    includeCompileClasspath = true
-    arguments {
-        arg("kapt.incremental.apt", "true")
-    }
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -63,16 +58,15 @@ dependencies {
     // Room for local database
     implementation 'androidx.room:room-runtime:2.6.1'
     implementation 'androidx.room:room-ktx:2.6.1'
-    kapt 'androidx.room:room-compiler:2.6.1'
+    ksp 'androidx.room:room-compiler:2.6.1'
 
     // Gson for JSON serialization
     implementation 'com.google.code.gson:gson:2.10.1'
 
-    // WitMotion BLE SDK (local AAR via flatDir)
-    implementation(name: 'wit-sdk', ext: 'aar')
+    // WitMotion BLE SDK - используем исходники для применения requestConnectionPriority
+    // KSP должен работать лучше с project dependencies, чем KAPT
+    implementation project(':wit-sdk')
     implementation project(':bluetoothkit')
-    compileOnly files('libs/wit-sdk-extracted/classes.jar')
-    kapt files('libs/wit-sdk-extracted/classes.jar')
     
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

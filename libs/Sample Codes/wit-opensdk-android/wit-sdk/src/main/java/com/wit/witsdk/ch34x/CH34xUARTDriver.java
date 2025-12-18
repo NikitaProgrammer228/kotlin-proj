@@ -14,7 +14,7 @@ import android.hardware.usb.UsbManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.wit.sdk.R;
+import com.wit.witsdk.R;
 import com.wit.witsdk.ch34x.utils.UsbUtils;
 
 import java.io.IOException;

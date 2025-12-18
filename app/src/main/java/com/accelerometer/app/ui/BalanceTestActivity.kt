@@ -313,7 +313,7 @@ class BalanceTestActivity : AppCompatActivity() {
                 pauseTest()
             } else {
                 // Тест не идёт или на паузе — начинаем новый тест
-                startTest()
+            startTest()
             }
         }
 

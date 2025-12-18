@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.accelerometer.app-mergeDebugResources-39:/values-v22/values-v22.xml",
+            "outputFile": "com.accelerometer.app-mergeDebugResources-38:/values-v22/values-v22.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\70dae9bf53c6510674b46de0afb13a64\\transformed\\appcompat-1.6.1\\res\\values-v22\\values-v22.xml",
+                    "source": "C:\\Users\\nikit\\.gradle\\caches\\8.13\\transforms\\49b97ff8a69b7ba93f06847e9079e762\\transformed\\appcompat-1.6.1\\res\\values-v22\\values-v22.xml",
                     "from": {
                         "startLines": "2,3,4,9",
                         "startColumns": "4,4,4,4",

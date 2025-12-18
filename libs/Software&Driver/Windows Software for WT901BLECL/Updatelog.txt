@@ -238,3 +238,11 @@
 2022-07-11 10:39:57   D:\WORK\desktop backup\STUFF\Tutorial\WT901BLECL BLE 5.0\BLE Software for Windows PC\temp\UpdateFileList1.txt
 2022-09-06 17:46:54   C:\Users\ZJQ\Desktop\BLE Software for Windows PC\temp\UpdateFileList1.txt
 2023-04-22 10:50:22   C:\Users\ZJQ\Downloads\BLE Software for Windows PC\Windows Software for WT901BLECL\temp\UpdateFileList1.txt
+2025-12-18 00:52:17   C:\Users\nikit\Desktop\kotlin-proj\libs\Software&Driver\Windows Software for WT901BLECL\temp\UpdateFileList1.txt
+2025-12-18 00:52:17   ??[GetResponseMessage]??:Удаленный сервер возвратил ошибку: (404) Не найден.
+2025-12-18 00:54:57   C:\Users\nikit\Desktop\kotlin-proj\libs\Software&Driver\Windows Software for WT901BLECL\temp\UpdateFileList1.txt
+2025-12-18 00:54:58   ??[GetResponseMessage]??:Удаленный сервер возвратил ошибку: (404) Не найден.
+2025-12-18 00:57:53   C:\Users\nikit\Desktop\kotlin-proj\libs\Software&Driver\Windows Software for WT901BLECL\temp\UpdateFileList1.txt
+2025-12-18 00:57:54   ??[GetResponseMessage]??:Удаленный сервер возвратил ошибку: (404) Не найден.
+2025-12-18 01:01:22   C:\Users\nikit\Desktop\kotlin-proj\libs\Software&Driver\Windows Software for WT901BLECL\temp\UpdateFileList1.txt
+2025-12-18 01:01:23   ??[GetResponseMessage]??:Удаленный сервер возвратил ошибку: (404) Не найден.

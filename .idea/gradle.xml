@@ -11,6 +11,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/libs/Sample Codes/wit-opensdk-android/wit-sdk" />
             <option value="$PROJECT_DIR$/third_party/bluetoothkit" />
           </set>
         </option>

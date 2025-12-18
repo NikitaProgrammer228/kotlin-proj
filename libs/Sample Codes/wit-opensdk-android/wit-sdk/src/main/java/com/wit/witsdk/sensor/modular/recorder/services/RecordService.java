@@ -12,7 +12,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.wit.sdk.R;
+import com.wit.witsdk.R;
 import com.wit.witsdk.broadcast.InvokeMethodBroadcastReceiver;
 import com.wit.witsdk.sensor.context.ProductModelManager;
 import com.wit.witsdk.sensor.entity.WitProductOption;

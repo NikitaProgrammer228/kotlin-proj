@@ -150,6 +150,24 @@ public class BleConnectWorker implements Handler.Callback, IBleConnectWorker, IB
 
         if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
             setConnectStatus(Constants.STATUS_DEVICE_CONNECTED);
+            
+            // ⚡ REQUEST HIGH PRIORITY CONNECTION FOR BETTER THROUGHPUT
+            // This reduces the BLE connection interval from ~30-100ms to ~7.5-15ms
+            // Enabling higher sample rates (potentially 40-50 Hz instead of 10 Hz)
+            if (mBluetoothGatt != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                try {
+                    boolean prioritySet = mBluetoothGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
+                    BluetoothLog.v(String.format("⚡ requestConnectionPriority(HIGH) = %s", prioritySet));
+                    android.util.Log.i("BleConnectWorker", "⚡ requestConnectionPriority(HIGH) = " + prioritySet + " (SDK: " + Build.VERSION.SDK_INT + ")");
+                    if (!prioritySet) {
+                        android.util.Log.w("BleConnectWorker", "⚠️ requestConnectionPriority returned false - connection priority may not be set");
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("BleConnectWorker", "❌ Failed to request connection priority", e);
+                }
+            } else {
+                android.util.Log.w("BleConnectWorker", "⚠️ Cannot use requestConnectionPriority: SDK=" + Build.VERSION.SDK_INT + ", gatt=" + (mBluetoothGatt != null));
+            }
 
             if (mGattResponseListener != null) {
                 mGattResponseListener.onConnectStatusChanged(true);

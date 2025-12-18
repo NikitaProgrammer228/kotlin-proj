@@ -23,3 +23,8 @@ include ':app'
 include ':bluetoothkit'
 project(':bluetoothkit').projectDir = file('third_party/bluetoothkit')
 
+// ⚡ Добавляем wit-sdk как исходный модуль для применения requestConnectionPriority
+// Используем KSP вместо KAPT для решения проблемы с project dependencies
+include ':wit-sdk'
+project(':wit-sdk').projectDir = file('libs/Sample Codes/wit-opensdk-android/wit-sdk')
+

@@ -12,6 +12,9 @@ import android.content.Context;
 import android.util.Log;
 
 import com.inuker.bluetooth.library.BluetoothClient;
+import com.inuker.bluetooth.library.connect.options.BleConnectOptions;
+import com.inuker.bluetooth.library.connect.response.BleConnectResponse;
+import com.inuker.bluetooth.library.model.BleGattProfile;
 import com.inuker.bluetooth.library.connect.response.BleNotifyResponse;
 import com.inuker.bluetooth.library.connect.response.BleReadRssiResponse;
 import com.inuker.bluetooth.library.connect.response.BleWriteResponse;
@@ -119,28 +122,35 @@ public class InukerBluetoothBLE implements Observerable {
         if ((connectStatus == STATUS_CONNECTING) || (connectStatus == STATUS_CONNECTED)) return;
         connectStatus = STATUS_CONNECTING;
 
-//        BleConnectOptions.Builder builder = new BleConnectOptions.Builder();
-//        builder.setConnectRetry(1);
-//        builder.setConnectTimeout(10000);
-//        builder.setServiceDiscoverRetry(3);
-//        builder.setServiceDiscoverTimeout(10000);
-//        BleConnectOptions bleConnectOptions = new BleConnectOptions(builder);
+        // ⚡ Используем BleConnectOptions для передачи параметров подключения
+        // bluetoothkit автоматически вызовет requestConnectionPriority(HIGH) в BleConnectWorker
+        BleConnectOptions.Builder builder = new BleConnectOptions.Builder();
+        builder.setConnectRetry(1);
+        builder.setConnectTimeout(10000);
+        builder.setServiceDiscoverRetry(3);
+        builder.setServiceDiscoverTimeout(10000);
+        BleConnectOptions bleConnectOptions = builder.build();
+        
         // 收到蓝牙数据时
-        mClient.connect(this.mac, (code, data) -> {
-            Log.e("BluetoothBLE", "conect:" + code);
-            if (code == REQUEST_SUCCESS) {
-                connectStatus = STATUS_CONNECTED;
-                Log.e("BluetoothBLE", "连接成功");
-                Log.e("BluetoothBLE", "mac:" + mac.toString());
-                Log.e("BluetoothBLE", "UUID_SERVICE:" + UUID_SERVICE.toString());
-                Log.e("BluetoothBLE", "UUID_READ:" + UUID_READ.toString());
+        mClient.connect(this.mac, bleConnectOptions, new BleConnectResponse() {
+            @Override
+            public void onResponse(int code, BleGattProfile data) {
+                Log.e("BluetoothBLE", "conect:" + code);
+                if (code == REQUEST_SUCCESS) {
+                    connectStatus = STATUS_CONNECTED;
+                    Log.e("BluetoothBLE", "连接成功");
+                    Log.e("BluetoothBLE", "mac:" + mac.toString());
+                    Log.e("BluetoothBLE", "UUID_SERVICE:" + UUID_SERVICE.toString());
+                    Log.e("BluetoothBLE", "UUID_READ:" + UUID_READ.toString());
+                    Log.i("BluetoothBLE", "✅ Connection established. bluetoothkit should call requestConnectionPriority(HIGH) automatically.");
 
-                setNotify();
-            }
+                    setNotify();
+                }
 
-            if (code == REQUEST_FAILED) {
-                Log.e("BluetoothBLE", "连接断开");
-                connectStatus = STATUS_DISCONNECTED;
+                if (code == REQUEST_FAILED) {
+                    Log.e("BluetoothBLE", "连接断开");
+                    connectStatus = STATUS_DISCONNECTED;
+                }
             }
         });
     }

@@ -1,42 +1,42 @@
 [
     {
-        "merged": "com.accelerometer.app-mergeDebugResources-40:/layout/item_user.xml",
-        "source": "com.accelerometer.app-main-43:/layout/item_user.xml"
+        "merged": "com.accelerometer.app-mergeDebugResources-39:/layout/activity_pkt.xml",
+        "source": "com.accelerometer.app-main-42:/layout/activity_pkt.xml"
     },
     {
-        "merged": "com.accelerometer.app-mergeDebugResources-40:/layout/activity_user_management.xml",
-        "source": "com.accelerometer.app-main-43:/layout/activity_user_management.xml"
+        "merged": "com.accelerometer.app-mergeDebugResources-39:/layout/activity_balance_test_target.xml",
+        "source": "com.accelerometer.app-main-42:/layout/activity_balance_test_target.xml"
     },
     {
-        "merged": "com.accelerometer.app-mergeDebugResources-40:/layout/dialog_add_user.xml",
-        "source": "com.accelerometer.app-main-43:/layout/dialog_add_user.xml"
+        "merged": "com.accelerometer.app-mergeDebugResources-39:/layout/item_sensor.xml",
+        "source": "com.accelerometer.app-main-42:/layout/item_sensor.xml"
     },
     {
-        "merged": "com.accelerometer.app-mergeDebugResources-40:/layout/item_sensor.xml",
-        "source": "com.accelerometer.app-main-43:/layout/item_sensor.xml"
+        "merged": "com.accelerometer.app-mergeDebugResources-39:/layout/dialog_test_preparation.xml",
+        "source": "com.accelerometer.app-main-42:/layout/dialog_test_preparation.xml"
     },
     {
-        "merged": "com.accelerometer.app-mergeDebugResources-40:/layout/dialog_sensor_selection.xml",
-        "source": "com.accelerometer.app-main-43:/layout/dialog_sensor_selection.xml"
+        "merged": "com.accelerometer.app-mergeDebugResources-39:/layout/dialog_add_user.xml",
+        "source": "com.accelerometer.app-main-42:/layout/dialog_add_user.xml"
     },
     {
-        "merged": "com.accelerometer.app-mergeDebugResources-40:/layout/dialog_test_preparation.xml",
-        "source": "com.accelerometer.app-main-43:/layout/dialog_test_preparation.xml"
+        "merged": "com.accelerometer.app-mergeDebugResources-39:/layout/activity_balance_test.xml",
+        "source": "com.accelerometer.app-main-42:/layout/activity_balance_test.xml"
     },
     {
-        "merged": "com.accelerometer.app-mergeDebugResources-40:/layout/activity_pkt.xml",
-        "source": "com.accelerometer.app-main-43:/layout/activity_pkt.xml"
+        "merged": "com.accelerometer.app-mergeDebugResources-39:/layout/item_user.xml",
+        "source": "com.accelerometer.app-main-42:/layout/item_user.xml"
     },
     {
-        "merged": "com.accelerometer.app-mergeDebugResources-40:/layout/activity_balance_test_target.xml",
-        "source": "com.accelerometer.app-main-43:/layout/activity_balance_test_target.xml"
+        "merged": "com.accelerometer.app-mergeDebugResources-39:/layout/activity_user_management.xml",
+        "source": "com.accelerometer.app-main-42:/layout/activity_user_management.xml"
     },
     {
-        "merged": "com.accelerometer.app-mergeDebugResources-40:/layout/activity_main.xml",
-        "source": "com.accelerometer.app-main-43:/layout/activity_main.xml"
+        "merged": "com.accelerometer.app-mergeDebugResources-39:/layout/dialog_sensor_selection.xml",
+        "source": "com.accelerometer.app-main-42:/layout/dialog_sensor_selection.xml"
     },
     {
-        "merged": "com.accelerometer.app-mergeDebugResources-40:/layout/activity_balance_test.xml",
-        "source": "com.accelerometer.app-main-43:/layout/activity_balance_test.xml"
+        "merged": "com.accelerometer.app-mergeDebugResources-39:/layout/activity_main.xml",
+        "source": "com.accelerometer.app-main-42:/layout/activity_main.xml"
     }
 ]
