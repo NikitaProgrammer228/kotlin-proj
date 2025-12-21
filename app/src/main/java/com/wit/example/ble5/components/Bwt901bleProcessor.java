@@ -71,6 +71,12 @@ public class Bwt901bleProcessor implements IDataProcessor {
         while (readDataThreadRuning) {
             try {
 
+                String reg21 = deviceModel.getDeviceData("21");// ACCRANGE
+                if (StringUtils.IsNullOrEmpty(reg21)) {
+                    // 读取21寄存器, 加速度范围
+                    sendProtocolData(deviceModel, new byte[]{(byte) 0xff, (byte) 0xaa, 0x27, 0x21, 0x00}, 150);
+                }
+
                 String magType = deviceModel.getDeviceData("72");// 磁场类型
                 if (StringUtils.IsNullOrEmpty(magType)) {
                     // 读取72磁场类型寄存器,后面解析磁场的时候要用到
@@ -191,14 +197,30 @@ public class Bwt901bleProcessor implements IDataProcessor {
         }
 
         // 加速度解算
+        double range = 16.0;
+        String regRange = deviceModel.getDeviceData("21");
+        if (!StringUtils.IsNullOrEmpty(regRange)) {
+            try {
+                int rangeIdx = Integer.parseInt(regRange);
+                switch (rangeIdx) {
+                    case 0: range = 2.0; break;
+                    case 1: range = 4.0; break;
+                    case 2: range = 8.0; break;
+                    case 3: range = 16.0; break;
+                }
+            } catch (Exception e) {
+                range = 16.0;
+            }
+        }
+
         if (!StringUtils.IsNullOrEmpty(regAx)) {
-            deviceModel.setDeviceData(WitSensorKey.AccX, NumberFormat.formatDoubleToString("%.3f", Double.parseDouble(regAx) / 32768 * 16) + "");
+            deviceModel.setDeviceData(WitSensorKey.AccX, NumberFormat.formatDoubleToString("%.4f", Double.parseDouble(regAx) / 32768.0 * range) + "");
         }
         if (!StringUtils.IsNullOrEmpty(regAy)) {
-            deviceModel.setDeviceData(WitSensorKey.AccY, NumberFormat.formatDoubleToString("%.3f", Double.parseDouble(regAy) / 32768 * 16));
+            deviceModel.setDeviceData(WitSensorKey.AccY, NumberFormat.formatDoubleToString("%.4f", Double.parseDouble(regAy) / 32768.0 * range));
         }
         if (!StringUtils.IsNullOrEmpty(regAz)) {
-            deviceModel.setDeviceData(WitSensorKey.AccZ, NumberFormat.formatDoubleToString("%.3f", Double.parseDouble(regAz) / 32768 * 16));
+            deviceModel.setDeviceData(WitSensorKey.AccZ, NumberFormat.formatDoubleToString("%.4f", Double.parseDouble(regAz) / 32768.0 * range));
         }
 
         // 角速度解算

@@ -150,7 +150,7 @@ public class BleConnectWorker implements Handler.Callback, IBleConnectWorker, IB
 
         if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
             setConnectStatus(Constants.STATUS_DEVICE_CONNECTED);
-            
+
             // ⚡ REQUEST HIGH PRIORITY CONNECTION FOR BETTER THROUGHPUT
             // This reduces the BLE connection interval from ~30-100ms to ~7.5-15ms
             // Enabling higher sample rates (potentially 40-50 Hz instead of 10 Hz)

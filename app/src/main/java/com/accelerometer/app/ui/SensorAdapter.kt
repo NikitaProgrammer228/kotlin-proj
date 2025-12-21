@@ -48,7 +48,14 @@ class SensorAdapter(
 
     override fun onBindViewHolder(holder: SensorViewHolder, position: Int) {
         val device = sensors[position]
-        holder.sensorNameText.text = device.name ?: device.mac
+        
+        // Отображаем имя с пометкой типа устройства
+        val displayName = if (device.isPhone) {
+            "📱 ${device.name ?: device.mac}"
+        } else {
+            device.name ?: device.mac
+        }
+        holder.sensorNameText.text = displayName
 
         // Изменяем фон и иконку в зависимости от выбора
         val isSelected = position == selectedPosition
@@ -60,14 +67,19 @@ class SensorAdapter(
 
         holder.itemView.setBackgroundColor(backgroundColor)
         
+        // Выбираем иконку в зависимости от типа устройства
+        val iconRes = if (device.isPhone) {
+            android.R.drawable.stat_sys_data_bluetooth // Временно используем системную иконку для телефона
+        } else {
+            R.drawable.ic_bluetooth_badge
+        }
+        
         // Для иконки используем drawable с разными цветами
         if (isSelected) {
-            // Синяя иконка для выбранного
-            holder.bluetoothIcon.setImageResource(R.drawable.ic_bluetooth_badge)
+            holder.bluetoothIcon.setImageResource(iconRes)
             holder.bluetoothIcon.clearColorFilter()
         } else {
-            // Серая иконка для невыбранного - используем tint
-            holder.bluetoothIcon.setImageResource(R.drawable.ic_bluetooth_badge)
+            holder.bluetoothIcon.setImageResource(iconRes)
             val iconColor = ContextCompat.getColor(holder.itemView.context, R.color.bluetooth_inactive)
             holder.bluetoothIcon.setColorFilter(iconColor)
         }

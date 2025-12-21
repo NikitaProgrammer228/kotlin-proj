@@ -1,4 +1,4 @@
-#Thu Dec 18 11:47:53 MSK 2025
+#Sun Dec 21 19:35:39 MSK 2025
 base.0=C\:\\Users\\nikit\\Desktop\\kotlin-proj\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
 base.1=C\:\\Users\\nikit\\Desktop\\kotlin-proj\\app\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\10\\classes.dex
 base.10=C\:\\Users\\nikit\\Desktop\\kotlin-proj\\app\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\4\\classes.dex

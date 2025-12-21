@@ -21,212 +21,215 @@
 15    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
 15-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:9:5-73
 15-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:9:22-70
-16    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-16-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:10:5-79
-16-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:10:22-76
-17    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-17-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:11:5-81
-17-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:11:22-78
-18
-19    <!-- For Android 12+ -->
-20    <uses-feature
-20-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:14:5-16:35
-21        android:name="android.hardware.bluetooth_le"
-21-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:15:9-53
-22        android:required="true" />
-22-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:16:9-32
-23
-24    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
-24-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:5-89
-24-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:22-86
-25    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-25-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:15:5-85
-25-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:15:22-82
-26    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" /> <!-- 往SDCard写入数据权限 -->
-26-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:21:5-23:47
-26-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:22:9-68
-27    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-27-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:24:5-81
-27-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:24:22-78
-28
-29    <uses-feature android:name="android.hardware.usb.host" />
-29-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:26:5-62
-29-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:26:19-59
-30
-31    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-32
-33    <permission
-33-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:22:5-24:47
-34        android:name="com.accelerometer.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-34-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:23:9-81
-35        android:protectionLevel="signature" />
-35-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:24:9-44
-36
-37    <uses-permission android:name="com.accelerometer.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
-37-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:26:5-97
-37-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:26:22-94
-38
-39    <application
-39-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:18:5-66:19
-40        android:allowBackup="true"
-40-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:19:9-35
-41        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-41-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:28:18-86
-42        android:debuggable="true"
-43        android:extractNativeLibs="false"
-44        android:icon="@mipmap/ic_launcher"
-44-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:20:9-43
-45        android:label="@string/app_name"
-45-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:21:9-41
-46        android:roundIcon="@mipmap/ic_launcher_round"
-46-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:22:9-54
-47        android:supportsRtl="true"
-47-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:23:9-35
-48        android:testOnly="true"
-49        android:theme="@style/Theme.AccelerometerApp" >
-49-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:24:9-54
-50        <activity
-50-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:27:9-34:20
-51            android:name="com.accelerometer.app.ui.MainActivity"
-51-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:28:13-44
-52            android:exported="true" >
-52-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:29:13-36
-53            <intent-filter>
-53-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:30:13-33:29
-54                <action android:name="android.intent.action.MAIN" />
-54-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:31:17-69
-54-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:31:25-66
-55
-56                <category android:name="android.intent.category.LAUNCHER" />
-56-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:32:17-77
-56-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:32:27-74
-57            </intent-filter>
-58        </activity>
-59        <activity
-59-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:36:9-38:40
-60            android:name="com.accelerometer.app.ui.UserManagementActivity"
-60-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:37:13-54
-61            android:exported="false" />
-61-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:38:13-37
-62        <activity
-62-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:40:9-42:40
-63            android:name="com.accelerometer.app.ui.ComparisonActivity"
-63-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:41:13-50
-64            android:exported="false" />
-64-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:42:13-37
-65        <activity
-65-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:44:9-46:40
-66            android:name="com.accelerometer.app.ui.PktActivity"
-66-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:45:13-43
-67            android:exported="false" />
-67-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:46:13-37
-68        <activity
-68-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:48:9-50:40
-69            android:name="com.accelerometer.app.ui.BalanceTestActivity"
-69-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:49:13-51
-70            android:exported="false" />
-70-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:50:13-37
-71        <activity
-71-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:52:9-54:40
-72            android:name="com.accelerometer.app.ui.BalanceTestTargetActivity"
-72-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:53:13-57
-73            android:exported="false" />
-73-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:54:13-37
-74
-75        <provider
-76            android:name="androidx.core.content.FileProvider"
-76-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:57:13-62
-77            android:authorities="com.accelerometer.app.fileprovider"
-77-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:58:13-64
-78            android:exported="false"
-78-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:59:13-37
-79            android:grantUriPermissions="true" >
-79-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:60:13-47
-80            <meta-data
-80-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:61:13-63:54
-81                android:name="android.support.FILE_PROVIDER_PATHS"
-81-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:62:17-67
-82                android:resource="@xml/file_paths" />
-82-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:63:17-51
-83        </provider>
-84        <provider
-84-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
-85            android:name="androidx.startup.InitializationProvider"
-85-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:25:13-67
-86            android:authorities="com.accelerometer.app.androidx-startup"
-86-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:26:13-68
-87            android:exported="false" >
-87-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:27:13-37
-88            <meta-data
-88-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
-89                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-89-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:30:17-75
-90                android:value="androidx.startup" />
-90-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:31:17-49
-91            <meta-data
-91-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\nikit\.gradle\caches\8.13\transforms\911b42ad89beb7424528e2dfd9c02d7e\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:29:13-31:52
-92                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-92-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\nikit\.gradle\caches\8.13\transforms\911b42ad89beb7424528e2dfd9c02d7e\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:30:17-78
-93                android:value="androidx.startup" />
-93-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\nikit\.gradle\caches\8.13\transforms\911b42ad89beb7424528e2dfd9c02d7e\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:31:17-49
-94            <meta-data
-94-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
-95                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-95-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
-96                android:value="androidx.startup" />
-96-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
-97        </provider>
-98
-99        <service
-99-->[androidx.room:room-runtime:2.6.1] C:\Users\nikit\.gradle\caches\8.13\transforms\5a782b9abda071de821f7a796a9af3ab\transformed\room-runtime-2.6.1\AndroidManifest.xml:24:9-28:63
-100            android:name="androidx.room.MultiInstanceInvalidationService"
-100-->[androidx.room:room-runtime:2.6.1] C:\Users\nikit\.gradle\caches\8.13\transforms\5a782b9abda071de821f7a796a9af3ab\transformed\room-runtime-2.6.1\AndroidManifest.xml:25:13-74
-101            android:directBootAware="true"
-101-->[androidx.room:room-runtime:2.6.1] C:\Users\nikit\.gradle\caches\8.13\transforms\5a782b9abda071de821f7a796a9af3ab\transformed\room-runtime-2.6.1\AndroidManifest.xml:26:13-43
-102            android:exported="false" />
-102-->[androidx.room:room-runtime:2.6.1] C:\Users\nikit\.gradle\caches\8.13\transforms\5a782b9abda071de821f7a796a9af3ab\transformed\room-runtime-2.6.1\AndroidManifest.xml:27:13-37
-103
-104        <receiver
-104-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
-105            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-105-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
-106            android:directBootAware="false"
-106-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
-107            android:enabled="true"
-107-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
-108            android:exported="true"
-108-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
-109            android:permission="android.permission.DUMP" >
-109-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
-110            <intent-filter>
-110-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
-111                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-111-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
-111-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
-112            </intent-filter>
-113            <intent-filter>
-113-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
-114                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-114-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
-114-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
-115            </intent-filter>
-116            <intent-filter>
-116-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
-117                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-117-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
-117-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
-118            </intent-filter>
-119            <intent-filter>
-119-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
-120                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-120-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
-120-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
-121            </intent-filter>
-122        </receiver>
-123
-124        <service android:name="com.inuker.bluetooth.library.BluetoothService" />
-124-->[:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:17:9-81
-124-->[:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:17:18-78
-125    </application>
-126
-127</manifest>
+16    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+16-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:10:5-78
+16-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:10:22-75
+17    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+17-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:11:5-79
+17-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:11:22-76
+18    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+18-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:12:5-81
+18-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:12:22-78
+19
+20    <!-- For Android 12+ -->
+21    <uses-feature
+21-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:15:5-17:35
+22        android:name="android.hardware.bluetooth_le"
+22-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:16:9-53
+23        android:required="true" />
+23-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:17:9-32
+24
+25    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+25-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:5-89
+25-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:22-86
+26    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+26-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:15:5-85
+26-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:15:22-82
+27    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" /> <!-- 往SDCard写入数据权限 -->
+27-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:21:5-23:47
+27-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:22:9-68
+28    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+28-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:24:5-81
+28-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:24:22-78
+29
+30    <uses-feature android:name="android.hardware.usb.host" />
+30-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:26:5-62
+30-->[:wit-sdk] C:\Users\nikit\Desktop\kotlin-proj\libs\Sample Codes\wit-opensdk-android\wit-sdk\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:26:19-59
+31
+32    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+33
+34    <permission
+34-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:22:5-24:47
+35        android:name="com.accelerometer.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+35-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:23:9-81
+36        android:protectionLevel="signature" />
+36-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:24:9-44
+37
+38    <uses-permission android:name="com.accelerometer.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+38-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:26:5-97
+38-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:26:22-94
+39
+40    <application
+40-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:19:5-67:19
+41        android:allowBackup="true"
+41-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:20:9-35
+42        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+42-->[androidx.core:core:1.13.0] C:\Users\nikit\.gradle\caches\8.13\transforms\031e135f61f42ee77d0a5bbbbcb615d7\transformed\core-1.13.0\AndroidManifest.xml:28:18-86
+43        android:debuggable="true"
+44        android:extractNativeLibs="false"
+45        android:icon="@mipmap/ic_launcher"
+45-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:21:9-43
+46        android:label="@string/app_name"
+46-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:22:9-41
+47        android:roundIcon="@mipmap/ic_launcher_round"
+47-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:23:9-54
+48        android:supportsRtl="true"
+48-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:24:9-35
+49        android:testOnly="true"
+50        android:theme="@style/Theme.AccelerometerApp" >
+50-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:25:9-54
+51        <activity
+51-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:28:9-35:20
+52            android:name="com.accelerometer.app.ui.MainActivity"
+52-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:29:13-44
+53            android:exported="true" >
+53-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:30:13-36
+54            <intent-filter>
+54-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:31:13-34:29
+55                <action android:name="android.intent.action.MAIN" />
+55-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:32:17-69
+55-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:32:25-66
+56
+57                <category android:name="android.intent.category.LAUNCHER" />
+57-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:33:17-77
+57-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:33:27-74
+58            </intent-filter>
+59        </activity>
+60        <activity
+60-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:37:9-39:40
+61            android:name="com.accelerometer.app.ui.UserManagementActivity"
+61-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:38:13-54
+62            android:exported="false" />
+62-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:39:13-37
+63        <activity
+63-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:41:9-43:40
+64            android:name="com.accelerometer.app.ui.ComparisonActivity"
+64-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:42:13-50
+65            android:exported="false" />
+65-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:43:13-37
+66        <activity
+66-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:45:9-47:40
+67            android:name="com.accelerometer.app.ui.PktActivity"
+67-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:46:13-43
+68            android:exported="false" />
+68-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:47:13-37
+69        <activity
+69-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:49:9-51:40
+70            android:name="com.accelerometer.app.ui.BalanceTestActivity"
+70-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:50:13-51
+71            android:exported="false" />
+71-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:51:13-37
+72        <activity
+72-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:53:9-55:40
+73            android:name="com.accelerometer.app.ui.BalanceTestTargetActivity"
+73-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:54:13-57
+74            android:exported="false" />
+74-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:55:13-37
+75
+76        <provider
+77            android:name="androidx.core.content.FileProvider"
+77-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:58:13-62
+78            android:authorities="com.accelerometer.app.fileprovider"
+78-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:59:13-64
+79            android:exported="false"
+79-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:60:13-37
+80            android:grantUriPermissions="true" >
+80-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:61:13-47
+81            <meta-data
+81-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:62:13-64:54
+82                android:name="android.support.FILE_PROVIDER_PATHS"
+82-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:63:17-67
+83                android:resource="@xml/file_paths" />
+83-->C:\Users\nikit\Desktop\kotlin-proj\app\src\main\AndroidManifest.xml:64:17-51
+84        </provider>
+85        <provider
+85-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+86            android:name="androidx.startup.InitializationProvider"
+86-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:25:13-67
+87            android:authorities="com.accelerometer.app.androidx-startup"
+87-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:26:13-68
+88            android:exported="false" >
+88-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:27:13-37
+89            <meta-data
+89-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+90                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+90-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:30:17-75
+91                android:value="androidx.startup" />
+91-->[androidx.emoji2:emoji2:1.2.0] C:\Users\nikit\.gradle\caches\8.13\transforms\2a8b045bde1150d7f6ee833959a4612b\transformed\emoji2-1.2.0\AndroidManifest.xml:31:17-49
+92            <meta-data
+92-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\nikit\.gradle\caches\8.13\transforms\911b42ad89beb7424528e2dfd9c02d7e\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:29:13-31:52
+93                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+93-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\nikit\.gradle\caches\8.13\transforms\911b42ad89beb7424528e2dfd9c02d7e\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:30:17-78
+94                android:value="androidx.startup" />
+94-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\nikit\.gradle\caches\8.13\transforms\911b42ad89beb7424528e2dfd9c02d7e\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:31:17-49
+95            <meta-data
+95-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+96                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+96-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
+97                android:value="androidx.startup" />
+97-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+98        </provider>
+99
+100        <service
+100-->[androidx.room:room-runtime:2.6.1] C:\Users\nikit\.gradle\caches\8.13\transforms\5a782b9abda071de821f7a796a9af3ab\transformed\room-runtime-2.6.1\AndroidManifest.xml:24:9-28:63
+101            android:name="androidx.room.MultiInstanceInvalidationService"
+101-->[androidx.room:room-runtime:2.6.1] C:\Users\nikit\.gradle\caches\8.13\transforms\5a782b9abda071de821f7a796a9af3ab\transformed\room-runtime-2.6.1\AndroidManifest.xml:25:13-74
+102            android:directBootAware="true"
+102-->[androidx.room:room-runtime:2.6.1] C:\Users\nikit\.gradle\caches\8.13\transforms\5a782b9abda071de821f7a796a9af3ab\transformed\room-runtime-2.6.1\AndroidManifest.xml:26:13-43
+103            android:exported="false" />
+103-->[androidx.room:room-runtime:2.6.1] C:\Users\nikit\.gradle\caches\8.13\transforms\5a782b9abda071de821f7a796a9af3ab\transformed\room-runtime-2.6.1\AndroidManifest.xml:27:13-37
+104
+105        <receiver
+105-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+106            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+106-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+107            android:directBootAware="false"
+107-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+108            android:enabled="true"
+108-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+109            android:exported="true"
+109-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+110            android:permission="android.permission.DUMP" >
+110-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+111            <intent-filter>
+111-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+112                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+112-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+112-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+113            </intent-filter>
+114            <intent-filter>
+114-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+115                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+115-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+115-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+116            </intent-filter>
+117            <intent-filter>
+117-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+118                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+118-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+118-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
+119            </intent-filter>
+120            <intent-filter>
+120-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+121                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+121-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+121-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\nikit\.gradle\caches\8.13\transforms\97a44185eaad9eafb57e7e9ea179f39b\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+122            </intent-filter>
+123        </receiver>
+124
+125        <service android:name="com.inuker.bluetooth.library.BluetoothService" />
+125-->[:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:17:9-81
+125-->[:bluetoothkit] C:\Users\nikit\Desktop\kotlin-proj\third_party\bluetoothkit\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:17:18-78
+126    </application>
+127
+128</manifest>

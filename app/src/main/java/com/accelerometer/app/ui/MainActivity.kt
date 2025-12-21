@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.accelerometer.app.R
 import com.accelerometer.app.bluetooth.BluetoothAccelerometerService
+import com.accelerometer.app.bluetooth.PhoneSensorServer
 import com.accelerometer.app.measurement.MeasurementConfig
 import com.accelerometer.app.data.MeasurementState
 import com.accelerometer.app.data.MeasurementStatus
@@ -47,6 +48,10 @@ class MainActivity : AppCompatActivity() {
     private var autoStartEnabled = true
     private val motionThresholdG = 0.05  // Порог движения для автозапуска (0.05g)
     private var lastAccelerationMagnitude = 0.0
+    
+    // Режим сервера (телефон как датчик)
+    private var phoneSensorServer: PhoneSensorServer? = null
+    private var isServerMode = false
     
     companion object {
         private val TEST_DURATIONS = listOf(10.0, 20.0, 30.0)
@@ -165,7 +170,7 @@ class MainActivity : AppCompatActivity() {
     
     private fun setupClickListeners() {
         binding.btnConnect.setOnClickListener {
-            if (bluetoothService.connectionState.value == BluetoothAccelerometerService.ConnectionState.CONNECTED) {
+            if (isServerMode || bluetoothService.connectionState.value == BluetoothAccelerometerService.ConnectionState.CONNECTED) {
                 disconnect()
             } else {
                 checkPermissionsAndConnect()
@@ -192,6 +197,7 @@ class MainActivity : AppCompatActivity() {
             listOf(
                 Manifest.permission.BLUETOOTH_SCAN,
                 Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.BLUETOOTH_ADVERTISE, // Для режима сервера
                 Manifest.permission.ACCESS_FINE_LOCATION // required unless we opt-out via neverForLocation flag
             )
         } else {
@@ -213,12 +219,122 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun showDeviceSelectionDialog() {
-        Toast.makeText(this, getString(R.string.scanning), Toast.LENGTH_SHORT).show()
-        bluetoothService.startDiscovery()
+        // Показываем диалог выбора режима
+        val options = arrayOf(
+            "🔍 Поиск датчиков (клиент)",
+            "📱 Использовать этот телефон как датчик (сервер)"
+        )
+        
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Выберите режим")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> startClientMode()
+                    1 -> startServerMode()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+    
+    private fun startClientMode() {
+        isServerMode = false
+        Toast.makeText(this, "🔍 Поиск датчиков и телефонов...\nПодождите 5 секунд", Toast.LENGTH_LONG).show()
+        binding.connectionStatus.text = "🔍 Поиск устройств..."
+        bluetoothService.startDiscoveryForSelection()
+        
+        // Показываем диалог выбора устройства через 5 секунд (дольше для надёжности)
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            showDeviceListDialog()
+        }, 5000)
+    }
+    
+    private fun showDeviceListDialog() {
+        val devices = bluetoothService.getDiscoveredDevices()
+        
+        if (devices.isEmpty()) {
+            Toast.makeText(this, "Устройства не найдены. Повторите поиск.", Toast.LENGTH_LONG).show()
+            return
+        }
+        
+        val deviceNames = devices.map { device ->
+            if (device.isPhone) {
+                "📱 ${device.name ?: device.mac}"
+            } else {
+                "🔵 ${device.name ?: device.mac}"
+            }
+        }.toTypedArray()
+        
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Выберите устройство")
+            .setItems(deviceNames) { _, which ->
+                val selectedDevice = devices[which]
+                bluetoothService.connectToDevice(selectedDevice)
+            }
+            .setNegativeButton("Повторить поиск") { _, _ ->
+                startClientMode()
+            }
+            .setNeutralButton("Отмена") { _, _ ->
+                bluetoothService.stopDiscovery()
+            }
+            .show()
+    }
+    
+    private fun startServerMode() {
+        isServerMode = true
+        
+        if (phoneSensorServer == null) {
+            phoneSensorServer = PhoneSensorServer(this)
+        }
+        
+        if (phoneSensorServer?.start() == true) {
+            // Показываем подробную инструкцию
+            android.app.AlertDialog.Builder(this)
+                .setTitle("📱 Режим сервера запущен")
+                .setMessage(
+                    "Этот телефон теперь работает как датчик.\n\n" +
+                    "Инструкция:\n" +
+                    "1. Положите телефон на платформу Simprove\n" +
+                    "2. На ПЛАНШЕТЕ откройте приложение\n" +
+                    "3. Нажмите 'Подключиться' → 'Поиск датчиков'\n" +
+                    "4. Выберите '📱 PhoneSensor_...' из списка\n\n" +
+                    "Имя устройства: PhoneSensor_*"
+                )
+                .setPositiveButton("OK", null)
+                .show()
+            
+            binding.connectionStatus.text = "📱 СЕРВЕР АКТИВЕН - ищите с планшета"
+            binding.btnConnect.text = "Остановить сервер"
+            
+            // Наблюдаем за состоянием сервера
+            lifecycleScope.launch {
+                phoneSensorServer?.connectedClientsCount?.collect { count ->
+                    if (count > 0) {
+                        binding.connectionStatus.text = "📱 Сервер: $count клиент(ов) подключено ✅"
+                    } else {
+                        binding.connectionStatus.text = "📱 СЕРВЕР АКТИВЕН - ищите с планшета"
+                    }
+                }
+            }
+        } else {
+            Toast.makeText(this, "❌ Не удалось запустить режим сервера.\nПроверьте разрешения Bluetooth.", Toast.LENGTH_LONG).show()
+            isServerMode = false
+        }
+    }
+    
+    private fun stopServerMode() {
+        phoneSensorServer?.stop()
+        isServerMode = false
+        binding.connectionStatus.text = getString(R.string.disconnected)
+        binding.btnConnect.text = getString(R.string.connect)
     }
     
     private fun disconnect() {
-        bluetoothService.disconnect()
+        if (isServerMode) {
+            stopServerMode()
+        } else {
+            bluetoothService.disconnect()
+        }
         viewModel.stopMeasurement()
         clearCharts()
     }
@@ -434,6 +550,7 @@ class MainActivity : AppCompatActivity() {
     
     override fun onDestroy() {
         super.onDestroy()
+        phoneSensorServer?.stop()
         bluetoothService.disconnect()
     }
 }

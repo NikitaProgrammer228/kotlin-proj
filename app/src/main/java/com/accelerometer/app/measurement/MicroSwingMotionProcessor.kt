@@ -8,23 +8,31 @@ import kotlin.math.sqrt
  * Процессор движения по алгоритму MicroSwing.
  * 
  * ✅ ОПТИМИЗИРОВАНО для 50 Hz: После настройки RSW=ACC_ONLY и RRATE=50Hz
- * датчик выдаёт стабильно ~50 Hz (как немецкий MicroSwing).
+ * датчик выдаёт стабильно ~50 Hz.
  * 
- * Используем ДВОЙНУЮ ИНТЕГРАЦИЮ ускорения для получения позиции
- * (как в оригинальном MicroSwing) - это обеспечивает четкое отображение
- * движения вперед-назад, вправо-влево.
+ * ⚠️ НОВЫЙ ПОДХОД: "Resonant Spring-Mass" модель (ВТОРОЙ ПОРЯДОК)
  * 
- * Алгоритм:
- * 1. Калибровка bias (первые 10 сэмплов = 0.2 сек при 50 Hz)
- * 2. Фильтрация: ТОЛЬКО LPF (шум, 15 Hz) - HPF ОТКЛЮЧЕН (убирал реальное движение)
- * 3. Интеграция: acc → vel → pos (только двойная интеграция, без углов)
- * 4. Drift correction: velocity damping (0.1) + ZUPT (10 mg, 20 кадров) - минимальное затухание
+ * Проблема:
+ * - Washout/Leaky Integrator (первый порядок) НЕ создаёт осцилляции
+ * - Немецкий MicroSwing показывает чёткие ОСЦИЛЛЯЦИИ (overshoot) после толчка
+ * 
+ * Решение: Используем резонансную систему (пружина-масса, второй порядок):
+ * 
+ *   system_acceleration = -omega^2 * position - 2*zeta*omega * velocity + input_acceleration
+ *   velocity += system_acceleration * dt
+ *   position += velocity * dt
+ * 
+ * Где:
+ * - omega = натуральная частота (определяет скорость осцилляций)
+ * - zeta = коэффициент демпфирования (zeta < 1 = осцилляции, zeta >= 1 = без осцилляций)
+ * 
+ * Это создаёт затухающие колебания как на немецком графике!
  */
 class MicroSwingMotionProcessor(
     private val expectedSampleRateHz: Double = MeasurementConfig.EXPECTED_SAMPLE_RATE_HZ
 ) {
     private val tag = "MotionProcessor"
-    
+
     data class MotionState(
         val axMm: Double,      // Ускорение X (mm/s²)
         val ayMm: Double,      // Ускорение Y (mm/s²)
@@ -41,68 +49,75 @@ class MicroSwingMotionProcessor(
         // ===========================================
         // КАЛИБРОВКА
         // ===========================================
-        // При 50 Hz: 10 сэмплов = 0.2 сек (достаточно для стабильной калибровки)
         private const val CALIBRATION_SAMPLES = 10
         
         // ===========================================
-        // РЕЖИМ ОБРАБОТКИ
+        // КОНВЕРТАЦИЯ УГОЛ → ММ (для резервного режима)
         // ===========================================
-        // true = использовать углы (стабильно, но менее чувствительно к плоскому движению)
-        // false = использовать двойную интеграцию ускорения (чувствительнее, но дрейфует)
-        private const val USE_ANGLE_MODE = false
-        
-        // ===========================================
-        // КОНВЕРТАЦИЯ УГОЛ → ММ
-        // ===========================================
-        // Коэффициент преобразования угла в мм
-        // При высоте платформы ~400мм: 1° ≈ 7мм смещения
         private const val ANGLE_TO_MM = 7.0
         
         // ===========================================
-        // ФИЗИКА (для режима ускорения)
+        // ФИЗИКА
         // ===========================================
         private const val G_TO_MM_S2 = 9806.65  // 1g = 9806.65 mm/s²
         
-        // Velocity damping: каждый кадр скорость *= (1 - DAMPING * dt)
-        // УМЕНЬШЕНО для четкого отображения движения (как в немецком MicroSwing)
-        // Немецкое устройство использует минимальное damping или вообще без него
-        private const val VELOCITY_DAMPING = 0.1  // Минимальное затухание
-        
-        // ZUPT: если |accel| < порог в течение N кадров, скорость = 0
-        // УВЕЛИЧЕН порог - иначе ZUPT сбрасывает скорость слишком часто и убирает движение
-        // Немецкое MicroSwing использует ZUPT очень редко или только для коррекции дрейфа
-        private const val ZUPT_THRESHOLD_G = 0.01  // 10 mg (увеличен, чтобы не сбрасывать реальное движение)
-        private const val ZUPT_FRAMES = 20  // 20 кадров при 50Hz = 400ms (только для длительного покоя)
+        // ===========================================
+        // ПОРОГ ШУМА (DEAD-ZONE)
+        // ===========================================
+        // Ускорения ниже этого порога считаются шумом и игнорируются.
+        // Типичный шум смартфона: 0.002-0.005g
+        // Устанавливаем 0.003g как порог (3 mg)
+        private const val NOISE_THRESHOLD_G = 0.003
         
         // ===========================================
-        // ФИЛЬТРЫ (оптимизированы для 50 Hz и четкого отображения движения)
+        // РЕЗОНАНСНАЯ СИСТЕМА (второй порядок)
         // ===========================================
-        // ⚠️ HPF ОТКЛЮЧЕН для ускорения!
-        // HPF убирал реальное движение (вперед-назад, вправо-влево)
-        // Вместо HPF используем только вычитание bias (калибровка) + LPF (убирание шума)
-        // Немецкое MicroSwing использует только вычитание bias, без HPF на ускорение
-        private const val ACC_HPF_CUTOFF_HZ = 0.01  // НЕ ИСПОЛЬЗУЕТСЯ (HPF отключен)
+        // 3.0 Hz - более плавные колебания, менее резкая реакция на шум
+        private const val RESONANT_FREQ_HZ = 3.0
         
-        // LPF на ускорение: убираем только высокочастотный шум
-        // УВЕЛИЧЕН cutoff - пропускаем весь полезный сигнал движения (до 15 Hz)
-        private const val ACC_LPF_CUTOFF_HZ = 15.0  // 15 Hz для 50 Hz входа (пропускаем почти весь сигнал движения)
+        // 0.7 - увеличенное демпфирование, меньше "звона" при шуме
+        private const val DAMPING_RATIO = 0.7
         
-        // HPF на угол: убираем медленный дрейф
-        private const val ANGLE_HPF_CUTOFF_HZ = 0.05
+        // "Живость" линии - значительно уменьшена для подавления шума
+        private const val ACCEL_BYPASS_FACTOR = 30.0
         
         // ===========================================
-        // МАСШТАБ И ЧУВСТВИТЕЛЬНОСТЬ
+        // НАСТРОЙКА ОСЕЙ
         // ===========================================
-        // Множитель для визуализации
-        // УВЕЛИЧЕН для лучшей видимости движения на графике
-        private const val DISPLAY_SCALE = 1.5  // Увеличено с 1.0 для лучшей видимости
+        private const val SWAP_XY_AXES = true
+        private const val INVERT_X = 1.0
+        private const val INVERT_Y = 1.0  // Возвращаем как было, раз Y работал верно
         
-        // Усиление для мелких движений
-        // УВЕЛИЧЕНО - нужно четко видеть все движения
-        private const val SENSITIVITY_BOOST = 2.5  // Увеличено для лучшей видимости движения
+        // ===========================================
+        // ПОДАВЛЕНИЕ И ДЕКОРРЕЛЯЦИЯ (УМНЫЙ РЕЖИМ)
+        // ===========================================
+        // Убираем глухое подавление, возвращаем 1.0 (полная чувствительность)
+        private const val X_AXIS_SUPPRESSION = 1.0
         
-        // Порог для активации усиления (мелкие движения усиливаются больше)
-        private const val SMALL_MOTION_THRESHOLD_MM = 10.0  // Увеличено - усиление применяется к более широкому диапазону
+        // Декорреляция: 0.5 - умеренное вычитание осей друг из друга
+        // Это поможет убрать "эхо" одной оси на другой
+        private const val X_Y_DECORRELATION = 0.5
+        
+        // ===========================================
+        // ФИЛЬТРЫ
+        // ===========================================
+        private const val ACC_HPF_CUTOFF_HZ = 0.3
+        
+        // Снижаем LPF до 5.0 Hz для более агрессивного подавления шума
+        private const val ACC_LPF_CUTOFF_HZ = 5.0
+        
+        private const val X_AXIS_EXTRA_LPF_HZ = 3.0
+        private const val ANGLE_HPF_CUTOFF_HZ = 0.1
+        
+        // ===========================================
+        // МАСШТАБ
+        // ===========================================
+        // 80.0 - уменьшено чтобы шум не превращался в огромные скачки
+        private const val DISPLAY_SCALE = 80.0
+        
+        // Отключаем boost для малых движений - он усиливал шум!
+        private const val SENSITIVITY_BOOST = 1.0
+        private const val SMALL_MOTION_THRESHOLD_MM = 10.0
     }
 
     // Калибровка
@@ -113,32 +128,35 @@ class MicroSwingMotionProcessor(
     private var biasAngleX = 0.0
     private var biasAngleY = 0.0
 
-    // Фильтры для ускорения
+    // Фильтры для ускорения (band-pass = HPF + LPF)
     private val hpfAccX = HighPassFilter(ACC_HPF_CUTOFF_HZ)
     private val hpfAccY = HighPassFilter(ACC_HPF_CUTOFF_HZ)
     private val lpfAccX = LowPassFilter(ACC_LPF_CUTOFF_HZ)
     private val lpfAccY = LowPassFilter(ACC_LPF_CUTOFF_HZ)
-    
+
+    // Дополнительный LPF для X оси (убираем "зубцы")
+    private val extraLpfX = LowPassFilter(X_AXIS_EXTRA_LPF_HZ)
+
     // Фильтры для углов
     private val hpfAngleX = HighPassFilter(ANGLE_HPF_CUTOFF_HZ)
     private val hpfAngleY = HighPassFilter(ANGLE_HPF_CUTOFF_HZ)
     
-    // Интеграция (для режима ускорения)
+    // Washout / Leaky Integrator модель
     private var velocityX = 0.0  // mm/s
     private var velocityY = 0.0
-    private var positionX = 0.0  // mm (интегрированная)
+    private var positionX = 0.0  // mm (с washout - возвращается к центру)
     private var positionY = 0.0
     
-    // ZUPT
-    private var lowAccelFramesX = 0
-    private var lowAccelFramesY = 0
-    
+    // Для метрик (реальная интегрированная позиция - для расчета пути)
+    private var rawPositionX = 0.0
+    private var rawPositionY = 0.0
+
     // Время
     private var lastTimestamp: Double? = null
     private var sampleCount = 0
     
     // Реальная частота
-    var realSampleRateHz: Double = 10.0
+    var realSampleRateHz: Double = 50.0
         private set
 
     fun reset() {
@@ -148,19 +166,19 @@ class MicroSwingMotionProcessor(
         biasAccY = 0.0
         biasAngleX = 0.0
         biasAngleY = 0.0
-        // HPF не используется для ускорения (отключен для сохранения движения)
-        // hpfAccX.reset()  // Не используется
-        // hpfAccY.reset()  // Не используется
+        hpfAccX.reset()
+        hpfAccY.reset()
         lpfAccX.reset()
         lpfAccY.reset()
+        extraLpfX.reset()
         hpfAngleX.reset()
         hpfAngleY.reset()
         velocityX = 0.0
         velocityY = 0.0
         positionX = 0.0
         positionY = 0.0
-        lowAccelFramesX = 0
-        lowAccelFramesY = 0
+        rawPositionX = 0.0
+        rawPositionY = 0.0
         lastTimestamp = null
         sampleCount = 0
     }
@@ -197,7 +215,7 @@ class MicroSwingMotionProcessor(
             biasAngleX += angleXDeg
             biasAngleY += angleYDeg
             calibrationSamples++
-            
+
             if (sampleCount % 2 == 0) {
                 Log.d(tag, "Calibrating: $calibrationSamples/$CALIBRATION_SAMPLES, " +
                     "acc=(${f4(axG)}g, ${f4(ayG)}g), angle=(${f2(angleXDeg)}°, ${f2(angleYDeg)}°)")
@@ -218,115 +236,110 @@ class MicroSwingMotionProcessor(
         }
 
         // === Применяем инверсию осей ===
-        val invertX = MeasurementConfig.AXIS_INVERT_X
-        val invertY = MeasurementConfig.AXIS_INVERT_Y
-
-        // === Позиция из УГЛОВ ===
-        val rawAngleX = (angleXDeg - biasAngleX) * invertX
-        val rawAngleY = (angleYDeg - biasAngleY) * invertY
+        val rawAccXTemp = (axG - biasAccX) * INVERT_X
+        val rawAccYTemp = (ayG - biasAccY) * INVERT_Y
         
-        // HPF на углы - убираем медленный дрейф
+        // === Позиция из УГЛОВ (альтернативный режим) ===
+        val rawAngleX = (angleXDeg - biasAngleX) * INVERT_X
+        val rawAngleY = (angleYDeg - biasAngleY) * INVERT_Y
+        
         val filtAngleX = hpfAngleX.update(rawAngleX, dt)
         val filtAngleY = hpfAngleY.update(rawAngleY, dt)
         
-        // Конвертируем угол в мм
         val posFromAngleX = filtAngleX * ANGLE_TO_MM
         val posFromAngleY = filtAngleY * ANGLE_TO_MM
 
-        // === Позиция из УСКОРЕНИЯ (двойная интеграция) ===
-        // Вычитаем bias (калибровочное смещение) - это убирает постоянную составляющую
-        val rawAccX = (axG - biasAccX) * invertX
-        val rawAccY = (ayG - biasAccY) * invertY
+        // === НОВЫЙ АЛГОРИТМ: Spring-Damper модель ===
+        // Вычитаем bias (инверсия уже применена выше к rawAccXTemp/rawAccYTemp)
         
-        // Фильтрация: ТОЛЬКО LPF для убирания шума
-        // HPF ОТКЛЮЧЕН - он убирал реальное движение (вперед-назад, вправо-влево)
-        // Bias уже убран через вычитание, поэтому HPF не нужен
-        // Немецкое MicroSwing использует только вычитание bias + легкий LPF
+        // Опционально: обмен осей X и Y
+        // Если SWAP_XY_AXES = true, то ось X сенсора становится нашей Y и наоборот
+        val rawAccX = if (SWAP_XY_AXES) rawAccYTemp else rawAccXTemp
+        val rawAccY = if (SWAP_XY_AXES) rawAccXTemp else rawAccYTemp
+        
+        // Band-pass фильтрация:
+        // 1. LPF - убираем высокочастотный шум
         val smoothAccX = lpfAccX.update(rawAccX, dt)
         val smoothAccY = lpfAccY.update(rawAccY, dt)
         
-        // Используем только LPF (без HPF) для сохранения всех движений
-        val finalAccX = smoothAccX
-        val finalAccY = smoothAccY
+        // 4. ДЕКОРРЕЛЯЦИЯ ВЫКЛЮЧЕНА для ДЕМО
+        val decorrelatedAccX = smoothAccX 
+        val decorrelatedAccY = smoothAccY 
+        
+        // 2. HPF - убираем медленный дрейф и DC offset
+        val hpfAccXVal = hpfAccX.update(decorrelatedAccX, dt)
+        val hpfAccYVal = hpfAccY.update(decorrelatedAccY, dt)
+        
+        // 3. Дополнительный LPF только для X оси (убираем "зубцы")
+        val filteredAccX = extraLpfX.update(hpfAccXVal, dt)
+        
+        // 5. Итоговые ускорения (X_AXIS_SUPPRESSION теперь 1.0)
+        val preDeadZoneX = filteredAccX * X_AXIS_SUPPRESSION
+        val preDeadZoneY = hpfAccYVal
+        
+        // 6. DEAD-ZONE: Игнорируем ускорения ниже порога шума
+        // Это критически важно для подавления "дрожания" когда телефон неподвижен
+        val finalAccX = applyDeadZone(preDeadZoneX, NOISE_THRESHOLD_G)
+        val finalAccY = applyDeadZone(preDeadZoneY, NOISE_THRESHOLD_G)
         
         // Ускорение в mm/s²
         val accelMmX = finalAccX * G_TO_MM_S2
         val accelMmY = finalAccY * G_TO_MM_S2
 
-        // ZUPT (используем finalAcc для проверки)
-        if (abs(finalAccX) < ZUPT_THRESHOLD_G) {
-            lowAccelFramesX++
-            if (lowAccelFramesX >= ZUPT_FRAMES) velocityX = 0.0
-        } else {
-            lowAccelFramesX = 0
-        }
+        // ===========================================
+        // РЕЗОНАНСНАЯ СИСТЕМА (пружина-масса) - создаёт ОСЦИЛЛЯЦИИ!
+        // ===========================================
+        val omega = 2.0 * Math.PI * RESONANT_FREQ_HZ  // Натуральная частота в рад/сек
+        val zeta = DAMPING_RATIO
         
-        if (abs(finalAccY) < ZUPT_THRESHOLD_G) {
-            lowAccelFramesY++
-            if (lowAccelFramesY >= ZUPT_FRAMES) velocityY = 0.0
-        } else {
-            lowAccelFramesY = 0
-        }
-
-        // Интеграция: acc → vel → pos
-        velocityX += accelMmX * dt
-        velocityY += accelMmY * dt
-        
-        // Velocity damping
-        val dampFactor = 1.0 - VELOCITY_DAMPING * dt
-        velocityX *= dampFactor.coerceIn(0.0, 1.0)
-        velocityY *= dampFactor.coerceIn(0.0, 1.0)
-
+        // X ось
+        val systemAccelX = -omega * omega * positionX - 2.0 * zeta * omega * velocityX + accelMmX
+        velocityX += systemAccelX * dt
         positionX += velocityX * dt
+        
+        // Y ось
+        val systemAccelY = -omega * omega * positionY - 2.0 * zeta * omega * velocityY + accelMmY
+        velocityY += systemAccelY * dt
         positionY += velocityY * dt
         
-        // Position damping (возврат к центру)
-        // УБРАНО для четкого отображения движения (как в немецком MicroSwing)
-        // Немецкое устройство не использует position damping - движение отображается напрямую
-        // positionX *= (1.0 - 0.05 * dt)  // Отключено
-        // positionY *= (1.0 - 0.05 * dt)  // Отключено
+        // Для метрик: сохраняем реальную интегрированную позицию
+        rawPositionX += velocityX * dt
+        rawPositionY += velocityY * dt
 
-        // === Выбор источника позиции ===
-        // При 50 Hz используем ТОЛЬКО двойную интеграцию ускорения
-        // (как в немецком MicroSwing) для четкого отображения движения
-        val (finalPosX, finalPosY) = if (USE_ANGLE_MODE) {
-            // Режим углов - стабильнее, но менее чувствителен к плоскому движению
-            Pair(posFromAngleX, posFromAngleY)
-        } else {
-            // Режим ускорения - используем ТОЛЬКО двойную интеграцию
-            // При 50 Hz дрейф минимален, комбинация с углами не нужна
-            // Это обеспечивает четкое отображение движения вперед-назад, вправо-влево
-            Pair(positionX, positionY)
-        }
+        // === Финальные позиции для отображения ===
+        val finalPosX = positionX
+        val finalPosY = positionY
 
         // === Усиление чувствительности для мелких движений ===
         val magnitude = sqrt(finalPosX * finalPosX + finalPosY * finalPosY)
-        val boost = if (magnitude < SMALL_MOTION_THRESHOLD_MM && magnitude > 0.1) {
-            // Для мелких движений увеличиваем масштаб
+        val boost = if (magnitude < SMALL_MOTION_THRESHOLD_MM && magnitude > 0.01) {
             val t = magnitude / SMALL_MOTION_THRESHOLD_MM  // 0..1
-            val boostFactor = SENSITIVITY_BOOST * (1.0 - t) + 1.0 * t  // плавный переход
+            val boostFactor = SENSITIVITY_BOOST * (1.0 - t) + 1.0 * t
             boostFactor
         } else {
             1.0
         }
 
-        val displayX = finalPosX * DISPLAY_SCALE * boost
-        val displayY = finalPosY * DISPLAY_SCALE * boost
+        val displayX = finalPosX * DISPLAY_SCALE * boost + (finalAccX * ACCEL_BYPASS_FACTOR * (DISPLAY_SCALE / 100.0))
+        val displayY = finalPosY * DISPLAY_SCALE * boost + (finalAccY * ACCEL_BYPASS_FACTOR * (DISPLAY_SCALE / 100.0))
 
         // === Артефакты ===
         val limit = MeasurementConfig.MOTION_POSITION_LIMIT_MM
         val hasArtifact = abs(displayX) > limit || abs(displayY) > limit
         val clampedX = displayX.coerceIn(-limit, limit)
         val clampedY = displayY.coerceIn(-limit, limit)
-
+        
         // === Логи ===
-        // При 50 Hz логируем каждые 50 кадров (раз в секунду)
-        if (sampleCount % 50 == 0) {
-            Log.d(tag, "#$sampleCount dt=${(dt*1000).toInt()}ms " +
+        val significantMotion = abs(rawAccX) > 0.005 || abs(rawAccY) > 0.005
+        
+        if (sampleCount % 50 == 0 || significantMotion) {
+            val marker = if (significantMotion) "⚡" else ""
+            Log.d(tag, "$marker#$sampleCount dt=${(dt*1000).toInt()}ms " +
                 "rawAcc=(${f4(rawAccX)}g,${f4(rawAccY)}g) " +
-                "finalAcc=(${f4(finalAccX)}g,${f4(finalAccY)}g) " +
+                "filtAcc=(${f4(finalAccX)}g,${f4(finalAccY)}g) " +
                 "vel=(${f1(velocityX)}, ${f1(velocityY)})mm/s " +
-                "pos=(${f1(displayX)}, ${f1(displayY)})mm boost=${f2(boost)}")
+                "pos=(${f1(positionX)}, ${f1(positionY)})mm " +
+                "display=(${f1(displayX)}, ${f1(displayY)})mm")
         }
 
         return MotionState(
@@ -336,15 +349,36 @@ class MicroSwingMotionProcessor(
             vyMm = velocityY,
             sxMm = clampedX,
             syMm = clampedY,
-            sxMmRaw = displayX,
-            syMmRaw = displayY,
+            sxMmRaw = rawPositionX,
+            syMmRaw = rawPositionY,
             hasArtifact = hasArtifact
         )
     }
-    
+
     private fun f1(v: Double) = String.format("%.1f", v)
     private fun f2(v: Double) = String.format("%.2f", v)
     private fun f4(v: Double) = String.format("%.4f", v)
+    
+    /**
+     * Dead-zone фильтр: игнорирует значения ниже порога шума.
+     * Это критично для подавления дрейфа когда сенсор неподвижен.
+     * 
+     * Используется "soft" dead-zone с плавным переходом для избежания
+     * резких скачков на границе порога.
+     */
+    private fun applyDeadZone(value: Double, threshold: Double): Double {
+        val absValue = abs(value)
+        return when {
+            absValue < threshold -> 0.0  // Полное подавление шума
+            absValue < threshold * 2 -> {
+                // Плавный переход от 0 до полного значения
+                val t = (absValue - threshold) / threshold  // 0..1
+                val sign = if (value >= 0) 1.0 else -1.0
+                sign * (absValue - threshold) * t
+            }
+            else -> value  // Полное значение
+        }
+    }
     
     /**
      * Low-pass фильтр (IIR 1-го порядка)

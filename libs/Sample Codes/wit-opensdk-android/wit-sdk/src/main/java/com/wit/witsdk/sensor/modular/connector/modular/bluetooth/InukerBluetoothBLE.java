@@ -135,21 +135,21 @@ public class InukerBluetoothBLE implements Observerable {
         mClient.connect(this.mac, bleConnectOptions, new BleConnectResponse() {
             @Override
             public void onResponse(int code, BleGattProfile data) {
-                Log.e("BluetoothBLE", "conect:" + code);
-                if (code == REQUEST_SUCCESS) {
-                    connectStatus = STATUS_CONNECTED;
-                    Log.e("BluetoothBLE", "连接成功");
-                    Log.e("BluetoothBLE", "mac:" + mac.toString());
-                    Log.e("BluetoothBLE", "UUID_SERVICE:" + UUID_SERVICE.toString());
-                    Log.e("BluetoothBLE", "UUID_READ:" + UUID_READ.toString());
+            Log.e("BluetoothBLE", "conect:" + code);
+            if (code == REQUEST_SUCCESS) {
+                connectStatus = STATUS_CONNECTED;
+                Log.e("BluetoothBLE", "连接成功");
+                Log.e("BluetoothBLE", "mac:" + mac.toString());
+                Log.e("BluetoothBLE", "UUID_SERVICE:" + UUID_SERVICE.toString());
+                Log.e("BluetoothBLE", "UUID_READ:" + UUID_READ.toString());
                     Log.i("BluetoothBLE", "✅ Connection established. bluetoothkit should call requestConnectionPriority(HIGH) automatically.");
 
-                    setNotify();
-                }
+                setNotify();
+            }
 
-                if (code == REQUEST_FAILED) {
-                    Log.e("BluetoothBLE", "连接断开");
-                    connectStatus = STATUS_DISCONNECTED;
+            if (code == REQUEST_FAILED) {
+                Log.e("BluetoothBLE", "连接断开");
+                connectStatus = STATUS_DISCONNECTED;
                 }
             }
         });

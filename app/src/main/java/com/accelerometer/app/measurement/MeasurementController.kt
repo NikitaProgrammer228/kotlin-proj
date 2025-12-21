@@ -19,6 +19,10 @@ class MeasurementController(
 
     companion object {
         const val DEFAULT_DURATION_SEC = MeasurementConfig.MEASUREMENT_DURATION_SEC
+        
+        // ⚡ Частота обновления UI - раз в N сэмплов
+        // При 100 Hz это даст ~20 обновлений в секунду (достаточно для плавного UI)
+        private const val UI_UPDATE_EVERY_N_SAMPLES = 5
     }
 
     private val processor = MeasurementProcessor()
@@ -32,6 +36,9 @@ class MeasurementController(
     private var lastSampleTimestamp: Double? = null
     private val maxGapSec = 0.1  // Максимальный пропуск между пакетами (100 мс при 50 Гц)
     private val artifactThresholdMm = 40.0  // Порог артефакта согласно ТЗ
+    
+    // Счётчик для throttle UI обновлений
+    private var samplesSinceLastUpdate = 0
 
     private val _state = MutableStateFlow(MeasurementState())
     val state: StateFlow<MeasurementState> = _state.asStateFlow()
@@ -48,6 +55,7 @@ class MeasurementController(
         isValid = true
         validationMessage = null
         lastSampleTimestamp = null
+        samplesSinceLastUpdate = 0
         _state.value = MeasurementState(status = status, elapsedSec = 0.0, isValid = true)
     }
 
@@ -106,19 +114,32 @@ class MeasurementController(
         processed += processedSample
         val elapsed = processedSample.t
         status = if (elapsed >= targetDurationSec) MeasurementStatus.FINISHED else MeasurementStatus.RUNNING
-
-        val metrics = MeasurementMath.buildMetrics(
-            processed,
-            durationSec = elapsed.coerceAtLeast(0.0001),
-            amplitudeThresholdMmFreq = MeasurementConfig.AMPLITUDE_THRESHOLD_MM_FREQ,
-            amplitudeThresholdMmCoord = MeasurementConfig.AMPLITUDE_THRESHOLD_MM_COORD,
-            correctionFactor = correctionFactor,
-            scalingCoefficient = coordinationScale
-        )
+        samplesSinceLastUpdate++
 
         if (status == MeasurementStatus.FINISHED) {
+            // При завершении всегда вычисляем полные метрики
+            val metrics = MeasurementMath.buildMetrics(
+                processed,
+                durationSec = elapsed.coerceAtLeast(0.0001),
+                amplitudeThresholdMmFreq = MeasurementConfig.AMPLITUDE_THRESHOLD_MM_FREQ,
+                amplitudeThresholdMmCoord = MeasurementConfig.AMPLITUDE_THRESHOLD_MM_COORD,
+                correctionFactor = correctionFactor,
+                scalingCoefficient = coordinationScale
+            )
             finalizeMeasurement(metrics)
-        } else {
+        } else if (samplesSinceLastUpdate >= UI_UPDATE_EVERY_N_SAMPLES) {
+            // ⚡ Обновляем UI только раз в N сэмплов для экономии CPU
+            samplesSinceLastUpdate = 0
+            
+            val metrics = MeasurementMath.buildMetrics(
+                processed,
+                durationSec = elapsed.coerceAtLeast(0.0001),
+                amplitudeThresholdMmFreq = MeasurementConfig.AMPLITUDE_THRESHOLD_MM_FREQ,
+                amplitudeThresholdMmCoord = MeasurementConfig.AMPLITUDE_THRESHOLD_MM_COORD,
+                correctionFactor = correctionFactor,
+                scalingCoefficient = coordinationScale
+            )
+            
             _state.value = MeasurementState(
                 status = status,
                 elapsedSec = elapsed,
@@ -128,6 +149,7 @@ class MeasurementController(
                 validationMessage = validationMessage
             )
         }
+        // Если не время обновлять UI - просто добавили сэмпл в processed и вышли
     }
     
     private fun abs(value: Double) = kotlin.math.abs(value)

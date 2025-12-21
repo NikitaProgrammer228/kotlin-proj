@@ -17,12 +17,15 @@ import com.wit.witsdk.sensor.modular.device.exceptions.OpenDeviceException
 import com.wit.example.ble5.Bwt901ble
 import com.wit.example.ble5.interfaces.IBwt901bleRecordObserver
 import com.wit.example.ble5.data.WitSensorKey
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * Сервис, обёртывающий SDK WitMotion BLE 5.0.
@@ -36,17 +39,28 @@ class BluetoothAccelerometerService(
         // Фильтр по имени устройства. Если пустой список - показываем все BLE устройства
         // Можно добавить другие варианты имен, например: "WT901BLECL", "WIT-MOTION", и т.д.
         private val DEVICE_NAME_FILTER = listOf("WT", "BWT", "WT901", "WIT", "BLECL")
+        // Фильтр для телефонов-датчиков
+        private const val PHONE_SENSOR_PREFIX = "PhoneSensor"
     }
 
     private var bluetoothManager: WitBluetoothManager? = null
     private val devices = mutableListOf<Bwt901ble>()
     private var connectedDevice: Bwt901ble? = null
     private val discoveredDevices = mutableListOf<DiscoveredDevice>()
+    
+    // Поддержка телефона как датчика
+    private var phoneSensorClient: PhoneSensorClient? = null
+    private var connectedToPhone = false
 
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
-    private val _sensorSamples = MutableSharedFlow<SensorSample>(extraBufferCapacity = 256)
+    // Буфер 512 сэмплов (~5 сек при 100 Hz), при переполнении отбрасываем СТАРЫЕ данные
+    private val _sensorSamples = MutableSharedFlow<SensorSample>(
+        replay = 0,
+        extraBufferCapacity = 512,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     val sensorSamples: SharedFlow<SensorSample> = _sensorSamples.asSharedFlow()
 
     private val _batteryLevel = MutableStateFlow(0)
@@ -59,11 +73,14 @@ class BluetoothAccelerometerService(
     data class DiscoveredDevice(
         val name: String?,
         val mac: String,
-        val bluetoothBLE: BluetoothBLE
+        val bluetoothBLE: BluetoothBLE? = null,
+        val isPhone: Boolean = false,
+        val phoneDevice: PhoneSensorClient.DiscoveredPhone? = null
     )
 
     init {
         initBluetoothManager()
+        phoneSensorClient = PhoneSensorClient(context)
     }
 
     private fun initBluetoothManager() {
@@ -201,27 +218,68 @@ class BluetoothAccelerometerService(
         } catch (ex: Exception) {
             Log.e(TAG, "❌ Unexpected error during discovery", ex)
         }
+        
+        // Также ищем телефоны с PhoneSensorServer
+        Log.i(TAG, "🔍 Also starting phone sensor discovery...")
+        phoneSensorClient?.startDiscovery()
     }
 
     /**
-     * Получить список найденных устройств.
+     * Получить список найденных устройств (включая телефоны).
      */
     fun getDiscoveredDevices(): List<DiscoveredDevice> {
-        return discoveredDevices.toList()
+        val allDevices = mutableListOf<DiscoveredDevice>()
+        
+        // Добавляем WitMotion датчики
+        allDevices.addAll(discoveredDevices)
+        
+        // Добавляем телефоны
+        phoneSensorClient?.getDiscoveredPhones()?.forEach { phone ->
+            if (allDevices.none { it.mac == phone.address }) {
+                allDevices.add(DiscoveredDevice(
+                    name = phone.name,
+                    mac = phone.address,
+                    bluetoothBLE = null,
+                    isPhone = true,
+                    phoneDevice = phone
+                ))
+                Log.d(TAG, "📱 Added phone to list: ${phone.name}")
+            }
+        }
+        
+        return allDevices.toList()
     }
 
     /**
-     * Подключиться к выбранному устройству.
+     * Подключиться к выбранному устройству (WitMotion или телефон).
      */
     fun connectToDevice(device: DiscoveredDevice) {
-        val manager = bluetoothManager ?: return
         _connectionState.value = ConnectionState.CONNECTING
         stopDiscovery()
+        
+        if (device.isPhone && device.phoneDevice != null) {
+            // Подключаемся к телефону
+            connectToPhone(device.phoneDevice)
+        } else if (device.bluetoothBLE != null) {
+            // Подключаемся к WitMotion датчику
+            connectToWitMotion(device)
+        } else {
+            Log.e(TAG, "❌ Invalid device: no BLE or phone data")
+            _connectionState.value = ConnectionState.DISCONNECTED
+        }
+    }
+    
+    /**
+     * Подключиться к WitMotion датчику.
+     */
+    private fun connectToWitMotion(device: DiscoveredDevice) {
+        val manager = bluetoothManager ?: return
         
         try {
             val sensor = Bwt901ble(device.bluetoothBLE)
             devices.add(sensor)
             connectedDevice = sensor
+            connectedToPhone = false
             sensor.registerRecordObserver(this)
             sensor.open()
             
@@ -238,9 +296,57 @@ class BluetoothAccelerometerService(
     }
 
     /**
-     * Остановить поиск устройств.
+     * Подключиться к телефону как датчику.
+     */
+    private fun connectToPhone(phone: PhoneSensorClient.DiscoveredPhone) {
+        Log.i(TAG, "📱 Connecting to phone: ${phone.name}")
+        connectedToPhone = true
+        
+        // Подключаемся к телефону
+        phoneSensorClient?.connectToPhone(phone)
+        
+        // Запускаем сборщик данных от телефона
+        kotlinx.coroutines.GlobalScope.launch {
+            phoneSensorClient?.sensorSamples?.collect { sample ->
+                // С DROP_OLDEST tryEmit всегда успешен
+                _sensorSamples.tryEmit(sample)
+            }
+        }
+        
+        // Следим за состоянием подключения
+        // Используем drop(1) чтобы пропустить начальное значение DISCONNECTED
+        kotlinx.coroutines.GlobalScope.launch {
+            phoneSensorClient?.connectionState?.collect { state ->
+                Log.d(TAG, "📱 Phone connection state changed: $state")
+                when (state) {
+                    PhoneSensorClient.ConnectionState.CONNECTED -> {
+                        Log.i(TAG, "✅ Phone connected successfully!")
+                        _connectionState.value = ConnectionState.CONNECTED
+                    }
+                    PhoneSensorClient.ConnectionState.DISCONNECTED -> {
+                        // Только если мы действительно были подключены или пытались подключиться
+                        if (connectedToPhone && _connectionState.value != ConnectionState.CONNECTING) {
+                            Log.i(TAG, "📱 Phone disconnected")
+                            _connectionState.value = ConnectionState.DISCONNECTED
+                        }
+                    }
+                    PhoneSensorClient.ConnectionState.CONNECTING -> {
+                        Log.i(TAG, "📱 Phone connecting...")
+                        _connectionState.value = ConnectionState.CONNECTING
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Остановить поиск устройств (WitMotion и телефонов).
      */
     fun stopDiscovery() {
+        // Останавливаем поиск телефонов
+        phoneSensorClient?.stopDiscovery()
+        
+        // Останавливаем поиск WitMotion
         val manager = bluetoothManager ?: return
         try {
             manager.removeObserver(this)
@@ -251,10 +357,18 @@ class BluetoothAccelerometerService(
     }
 
     /**
-     * Отключение от текущего устройства.
+     * Отключение от текущего устройства (WitMotion или телефон).
      */
     fun disconnect() {
         stopDiscovery()
+        
+        // Отключаемся от телефона
+        if (connectedToPhone) {
+            phoneSensorClient?.disconnect()
+            connectedToPhone = false
+        }
+        
+        // Отключаемся от WitMotion
         devices.forEach {
             it.removeRecordObserver(this)
             it.close()
@@ -341,109 +455,100 @@ class BluetoothAccelerometerService(
                 Thread.sleep(500)
                 
                 // === ШАГ 1: Разблокировка регистров ===
-                // FF AA 69 88 B5 - unlock command
                 Log.d(TAG, "→ Sending UNLOCK command...")
                 sensor.unlockReg()
-                Thread.sleep(800)  // Увеличена задержка для записи в EEPROM
+                Thread.sleep(800)
                 Log.d(TAG, "→ Registers unlocked")
                 
-                // === ШАГ 2: КРИТИЧЕСКИ ВАЖНО - Установка Return Content ===
-                // Регистр RSW (0x02): Что возвращать
-                // RSW_TIME=0x01, RSW_ACC=0x02, RSW_GYRO=0x04, RSW_ANGLE=0x08, RSW_MAG=0x10
-                // 
-                // ⚠️ По умолчанию датчик отправляет ВСЁ (ACC+GYRO+ANGLE+MAG = 0x1E),
-                // что забивает BLE канал и ограничивает частоту до 10 Hz!
-                //
-                // Устанавливаем ТОЛЬКО ускорение (RSW_ACC = 0x02):
-                // FF AA 02 02 00
-                Log.d(TAG, "→ Sending RSW=0x02 (ACC_ONLY) command: FF AA 02 02 00")
-                val rswCommand = byteArrayOf(
-                    0xFF.toByte(), 0xAA.toByte(), 
-                    0x02,  // RSW register
-                    0x02,  // RSW_ACC only (acceleration)
-                    0x00   // high byte
-                )
-                sensor.sendProtocolData(rswCommand, 500)  // Используем метод с waitTime
-                Thread.sleep(800)  // Увеличена задержка для записи в EEPROM
-                Log.d(TAG, "→ ✓ Set RSW to ACC ONLY (0x02) - освобождаем BLE канал!")
-                
-                // === ШАГ 3: Установка частоты 50 Hz ===
-                // Регистр RRATE (0x03):
-                // 0x06=10Hz, 0x07=20Hz, 0x08=50Hz, 0x09=100Hz, 0x0B=200Hz
-                // 
-                // Используем 50 Hz - оптимальный баланс для BLE
-                // FF AA 03 08 00
-                Log.d(TAG, "→ Sending RRATE=0x08 (50Hz) command: FF AA 03 08 00")
-                val rrateCommand = byteArrayOf(
-                    0xFF.toByte(), 0xAA.toByte(), 
-                    0x03,  // RRATE register
-                    0x08,  // RRATE_50HZ
-                    0x00   // high byte
-                )
-                sensor.sendProtocolData(rrateCommand, 500)  // Используем метод с waitTime
-                Thread.sleep(800)  // Увеличена задержка для записи в EEPROM
-                Log.d(TAG, "→ Set return rate to 50 Hz")
-                
-                // Дублируем через SDK метод (на случай если прямой вызов не сработал)
-                Log.d(TAG, "→ Also calling setReturnRate(0x08) via SDK method...")
-                sensor.setReturnRate(0x08) // 50Hz (byte)
+                // === ШАГ 2: Установка диапазона ±2g (ПЕРВЫМ ДЕЛОМ) ===
+                Log.d(TAG, "→ Setting ACCRANGE=0x00 (±2g)...")
+                for (i in 1..4) {
+                    sensor.unlockReg()
+                    Thread.sleep(300)
+                    // Прямая команда записи в регистр 0x21
+                    sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x21, 0x00, 0x00), 500)
+                    Thread.sleep(500)
+                    // Попробуем еще через специальную команду калибровки, иногда это «пробивает» настройки
+                    if (i == 3) {
+                        Log.d(TAG, "  → Special attempt with calibration command...")
+                        sensor.appliedCalibration()
+                        Thread.sleep(800)
+                    }
+                    sensor.saveReg()
+                    Thread.sleep(1000)
+                    
+                    // Проверяем
+                    sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x27, 0x21, 0x00))
+                    Thread.sleep(1000)
+                    val check = sensor.getDeviceData("21")
+                    if (check == "0") {
+                        Log.i(TAG, "✅ ACCRANGE set to ±2g (attempt $i)")
+                        break
+                    } else {
+                        Log.w(TAG, "⚠️ ACCRANGE still $check (attempt $i), retrying...")
+                    }
+                }
+
+                // === ШАГ 3: Установка Return Content ===
+                Log.d(TAG, "→ Sending RSW=0x02 (ACC_ONLY) command...")
+                sensor.unlockReg()
+                Thread.sleep(200)
+                sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x02, 0x02, 0x00), 500)
+                Thread.sleep(500)
+                sensor.saveReg()
                 Thread.sleep(800)
                 
-                // === ШАГ 4: Установка диапазона ускорения ±2g ===
-                // Регистр 0x21 (ACCRANGE): 0x00=±2g, 0x01=±4g, 0x02=±8g, 0x03=±16g
-                // ±2g даёт большую точность для малых движений
-                Log.d(TAG, "→ Sending ACCRANGE=0x00 (±2g) command: FF AA 21 00 00")
-                val accRangeCommand = byteArrayOf(
-                    0xFF.toByte(), 0xAA.toByte(), 
-                    0x21,  // ACCRANGE register
-                    0x00,  // ±2g
-                    0x00   // high byte
-                )
-                sensor.sendProtocolData(accRangeCommand, 500)  // Используем метод с waitTime
-                Thread.sleep(800)  // Увеличена задержка для записи в EEPROM
-                Log.d(TAG, "→ Set acceleration range to ±2g")
-                
-                // === ШАГ 5: Сохранение настроек в EEPROM ===
-                // FF AA 00 00 00 - save to flash (SAVE register = 0x00)
-                Log.d(TAG, "→ Sending SAVE command to write to EEPROM...")
-                sensor.saveReg()  // Используем метод SDK вместо прямого вызова
-                Thread.sleep(1000)  // Увеличена задержка - запись в EEPROM требует времени
-                Log.d(TAG, "→ Settings saved to EEPROM")
-                
-                // === ШАГ 6: Читаем регистры для проверки (после сохранения) ===
-                // Ждём ещё немного, чтобы датчик успел сохранить
+                // === ШАГ 4: Установка частоты 50 Hz ===
+                Log.d(TAG, "→ Sending RRATE=0x08 (50Hz) command...")
+                sensor.unlockReg()
+                Thread.sleep(200)
+                sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x03, 0x08, 0x00), 500)
                 Thread.sleep(500)
+                sensor.saveReg()
+                Thread.sleep(800)
                 
-                // Читаем RSW (0x02) - команда чтения: FF AA 27 02 00
-                Log.d(TAG, "→ Reading RSW register (0x02)...")
-                sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x27, 0x02, 0x00))
-                Thread.sleep(500)  // Увеличена задержка для получения ответа
-                val rswValue = sensor.getDeviceData("02")
-                Log.d(TAG, "  → RSW read result: '$rswValue'")
+                // === ШАГ 5: Финальное сохранение ===
+                Log.d(TAG, "→ Sending final SAVE command...")
+            sensor.unlockReg()
+                Thread.sleep(200)
+                sensor.saveReg()
+                Thread.sleep(1500)
+                Log.d(TAG, "→ Settings saved to EEPROM")
+            
+                // === ШАГ 6: Читаем регистры для проверки ===
+                fun readRegister(regName: String, regAddr: Int, expectedValue: String, maxRetries: Int = 3): String? {
+                    for (attempt in 1..maxRetries) {
+                        Log.d(TAG, "→ Reading $regName register (0x${regAddr.toString(16).uppercase()})... (attempt $attempt/$maxRetries)")
+                        sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x27, regAddr.toByte(), 0x00))
+                        Thread.sleep(800)
+                        val value = sensor.getDeviceData(regAddr.toString(16).padStart(2, '0'))
+                        Log.d(TAG, "  → $regName read result: '$value' (expect $expectedValue)")
+                        if (value != null && value.isNotEmpty() && value != "null") {
+                            return value
+                        }
+                        Thread.sleep(500)
+                    }
+                    return null
+                }
                 
-                // Читаем RRATE (0x03) - команда чтения: FF AA 27 03 00
-                Log.d(TAG, "→ Reading RRATE register (0x03)...")
-                sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x27, 0x03, 0x00))
-                Thread.sleep(500)  // Увеличена задержка для получения ответа
-                val currentRate = sensor.getDeviceData("03")
-                Log.d(TAG, "  → RRATE read result: '$currentRate'")
-                
-                // Читаем ACCRANGE (0x21) - команда чтения: FF AA 27 21 00
-                Log.d(TAG, "→ Reading ACCRANGE register (0x21)...")
-                sensor.sendProtocolData(byteArrayOf(0xFF.toByte(), 0xAA.toByte(), 0x27, 0x21, 0x00))
-                Thread.sleep(500)  // Увеличена задержка для получения ответа
-                val accRange = sensor.getDeviceData("21")
-                Log.d(TAG, "  → ACCRANGE read result: '$accRange'")
+                val rswValue = readRegister("RSW", 0x02, "2=ACC_ONLY")
+                val currentRate = readRegister("RRATE", 0x03, "8=50Hz")
+                val accRange = readRegister("ACCRANGE", 0x21, "0=±2g")
+            
+                Log.i(TAG, "✓ Sensor configuration complete:")
+                Log.i(TAG, "  📤 RSW: ${rswValue ?: "null"}")
+                Log.i(TAG, "  ⏱️ RRATE: ${currentRate ?: "null"}")
+                Log.i(TAG, "  📏 ACCRANGE: ${accRange ?: "null"}")
                 
                 Log.i(TAG, "✓ Sensor configuration complete:")
-                Log.i(TAG, "  📤 RSW (return content): $rswValue (expect 2=ACC_ONLY)")
-                Log.i(TAG, "  ⏱️ RRATE (frequency): $currentRate (expect 8=50Hz)")
-                Log.i(TAG, "  📏 ACCRANGE: $accRange (expect 0=±2g)")
+                Log.i(TAG, "  📤 RSW (return content): ${rswValue ?: "null"} (expect 2=ACC_ONLY)")
+                Log.i(TAG, "  ⏱️ RRATE (frequency): ${currentRate ?: "null"} (expect 8=50Hz)")
+                Log.i(TAG, "  📏 ACCRANGE: ${accRange ?: "null"} (expect 0=±2g)")
                 Log.i(TAG, "  🎯 Expected result: ~50 samples/sec instead of 10!")
                 
-            } catch (ex: Exception) {
-                Log.w(TAG, "Failed to configure sensor", ex)
-            }
+        } catch (ex: Exception) {
+            Log.w(TAG, "Failed to configure sensor", ex)
+        }
         }.start()
     }
     
@@ -466,7 +571,7 @@ class BluetoothAccelerometerService(
     // Для редкого логирования батареи
     private var lastBatteryLogTime = 0L
     private var totalSampleCount = 0L  // Общий счётчик для логов
-    
+
     override fun onRecord(bwt901ble: Bwt901ble) {
         // Счётчик частоты (логируем раз в секунду)
         sampleCount++
@@ -519,9 +624,8 @@ class BluetoothAccelerometerService(
             angleYDeg = angleY,
             angleZDeg = angleZ
         )
-        if (!_sensorSamples.tryEmit(sample)) {
-            Log.w(TAG, "Dropped sensor sample due to backpressure")
-        }
+        // С DROP_OLDEST tryEmit всегда успешен
+        _sensorSamples.tryEmit(sample)
 
         // ⚠️ Батарею проверяем РЕДКО (раз в 30 секунд), чтобы не спамить BLE канал!
         if (now - lastBatteryLogTime >= 30_000) {
